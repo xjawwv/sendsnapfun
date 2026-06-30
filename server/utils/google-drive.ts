@@ -1,26 +1,7 @@
-import { google } from 'googleapis'
 import { Readable } from 'stream'
 
-function getAuth() {
-  const config = useRuntimeConfig()
-  const serviceAccount = config.gdriveServiceAccount
-  if (!serviceAccount) {
-    throw createError({ statusCode: 500, statusMessage: 'Google Drive service account not configured' })
-  }
-
-  const credentials = typeof serviceAccount === 'string' ? JSON.parse(serviceAccount) : serviceAccount
-
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
-  })
-
-  return auth
-}
-
 export async function createDriveFolder(folderName: string, parentFolderId: string): Promise<string> {
-  const auth = await getAuth()
-  const drive = google.drive({ version: 'v3', auth })
+  const drive = await getAuthenticatedDrive()
 
   const response = await drive.files.create({
     requestBody: {
@@ -40,8 +21,7 @@ export async function uploadFileToDrive(
   fileBuffer: Buffer,
   mimeType: string,
 ): Promise<string> {
-  const auth = await getAuth()
-  const drive = google.drive({ version: 'v3', auth })
+  const drive = await getAuthenticatedDrive()
 
   const response = await drive.files.create({
     requestBody: {
@@ -58,7 +38,9 @@ export async function uploadFileToDrive(
   return response.data.id!
 }
 
-export function makeFolderPublic(drive: any, folderId: string) {
+export async function makeFolderPublic(folderId: string) {
+  const drive = await getAuthenticatedDrive()
+
   return drive.permissions.create({
     fileId: folderId,
     requestBody: {

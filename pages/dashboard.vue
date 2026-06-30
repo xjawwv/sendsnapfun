@@ -5,6 +5,8 @@ const data = ref(null)
 const showCreateModal = ref(false)
 const showUploadModal = ref(false)
 const showEditModal = ref(false)
+const driveConnected = ref(false)
+const driveChecking = ref(true)
 const editingId = ref('')
 
 const formIsBatch = ref(false)
@@ -109,7 +111,29 @@ function countdown(expiresAt) {
   return Math.floor(diff / 86400000) + ' Hr ' + Math.floor((diff % 86400000) / 3600000) + ' Jm'
 }
 
-onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) })
+async function checkDriveStatus() {
+  try {
+    const res = await $fetch('/api/auth/google/status')
+    driveConnected.value = res.connected
+  } catch {} finally { driveChecking.value = false }
+}
+
+async function connectDrive() {
+  try {
+    const res = await $fetch('/api/auth/google/connect')
+    if (res.url) window.location.href = res.url
+  } catch { alert('Gagal menghubungkan Google Drive.') }
+}
+
+async function disconnectDrive() {
+  if (!confirm('Putuskan koneksi Google Drive?')) return
+  await $fetch('/api/auth/google/disconnect', { method: 'POST' })
+  driveConnected.value = false
+}
+
+onMounted(async () => {
+  await loadData(); await checkDriveStatus(); setInterval(() => loadData(), 60000)
+})
 </script>
 
 <template>
@@ -130,6 +154,16 @@ onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) }
           Proyek Klien
         </div>
       </nav>
+      <div class="px-4 py-2 border-t border-gray-100">
+        <div class="flex items-center gap-3 p-3 rounded-xl text-sm">
+          <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="[driveChecking ? 'animate-spin bg-gray-400' : driveConnected ? 'bg-emerald-500' : 'bg-gray-300']"></div>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-xs truncate">{{ driveChecking ? 'Checking...' : driveConnected ? 'Google Drive Connected' : 'Not Connected' }}</p>
+          </div>
+          <button v-if="!driveConnected && !driveChecking" @click="connectDrive" class="text-[10px] font-bold text-[#355faa] hover:underline shrink-0">Connect</button>
+          <button v-if="driveConnected" @click="disconnectDrive" class="text-[10px] font-bold text-red-500 hover:underline shrink-0">Disconnect</button>
+        </div>
+      </div>
       <div class="p-4 border-t border-gray-100">
         <button @click="handleLogout" class="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 font-bold text-sm">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -163,10 +197,18 @@ onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) }
             </div>
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm md:col-span-2 flex items-center justify-between">
               <div>
-                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Status Storage Server</p>
-                <p class="text-lg md:text-xl font-bold text-emerald-500 flex items-center gap-2">
+                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive Connection</p>
+                <div v-if="driveChecking" class="flex items-center gap-2 text-sm text-gray-400">
+                  <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  Checking...
+                </div>
+                <p v-else-if="driveConnected" class="text-lg md:text-xl font-bold text-emerald-500 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="m9 12 2 2 4-4"/></svg>
-                  0 MB (G-Drive API)
+                  Connected
+                </p>
+                <p v-else class="text-lg md:text-xl font-bold text-gray-400 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  Not Connected
                 </p>
               </div>
               <div class="flex gap-3">
