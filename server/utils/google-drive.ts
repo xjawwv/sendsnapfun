@@ -1,5 +1,5 @@
 import { google } from 'googleapis'
-import type { Readable } from 'stream'
+import { Readable } from 'stream'
 
 function getAuth() {
   const config = useRuntimeConfig()
@@ -50,7 +50,7 @@ export async function uploadFileToDrive(
     },
     media: {
       mimeType,
-      body: fileBuffer as unknown as Readable,
+      body: Readable.from(fileBuffer),
     },
     fields: 'id',
   })
