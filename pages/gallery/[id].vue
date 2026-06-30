@@ -13,12 +13,9 @@ const gifProcessing = ref(false)
 const showGifModal = ref(false)
 const showDownloadModal = ref(false)
 const downloadProgress = ref('')
-const visibleCount = ref(0)
 const loadedImages = ref(new Set())
 
 let timerInterval = null
-let scrollObserver = null
-let loadTimer = null
 
 async function loadAlbum() {
   try {
@@ -117,36 +114,13 @@ function generateGIF() {
   })
 }
 
-function startImageLoader() {
-  visibleCount.value = 1
-  loadNextImage()
-}
-
-function loadNextImage() {
-  const next = visibleCount.value
-  if (next > photos.value.length) return
-  const img = new Image()
-  img.onload = () => {
-    loadedImages.value.add(next - 1)
-    visibleCount.value = next + 1
-    loadTimer = setTimeout(loadNextImage, 400)
-  }
-  img.onerror = () => {
-    loadedImages.value.add(next - 1)
-    visibleCount.value = next + 1
-    loadTimer = setTimeout(loadNextImage, 400)
-  }
-  img.src = photos.value[next - 1].displayUrl
-}
-
 onMounted(async () => {
   await loadAlbum()
-  if (album.value) { startTimer(); startImageLoader() }
+  if (album.value) { startTimer(); loadedImages.value = new Set(photos.value.map((_, i) => i)) }
 })
 
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
-  if (loadTimer) clearTimeout(loadTimer)
 })
 </script>
 
@@ -204,10 +178,7 @@ onUnmounted(() => {
       </div>
       <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100">
-          <div v-if="!loadedImages.has(i)" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
-            <svg class="animate-spin text-gray-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          </div>
-          <img v-show="loadedImages.has(i)" :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" crossorigin="anonymous">
+          <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous">
           <div v-if="!gifMode" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
             <button @click="downloadSingle(photo.downloadUrl, 'SnapFun_' + album.paket + '_' + album.name + '_' + (i+1) + '.' + (photo.name.split('.').pop() || 'jpg'))" class="w-full bg-white text-[#355faa] py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 shadow-lg btn-touch">Unduh</button>
           </div>
