@@ -277,25 +277,26 @@ onUnmounted(() => {
     </main>
 
     <!-- Bottom Actions -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pt-4 pb-6 px-6 z-30 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-      <div v-if="!gifMode && !selectMode" class="flex gap-3">
-        <button @click="enterSelectMode" class="flex-1 bg-white border border-gray-200 text-gray-700 h-14 rounded-2xl font-bold text-[10px] md:text-xs uppercase shadow-sm flex items-center justify-center gap-2 btn-touch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Pilih Foto
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 pb-safe pt-3 z-30">
+      <div v-if="!gifMode && !selectMode" class="flex gap-2">
+        <button @click="enterSelectMode" class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 h-12 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch active:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Pilih
         </button>
-        <button @click="toggleGifMode" class="flex-1 bg-white border border-gray-200 text-gray-700 h-14 rounded-2xl font-bold text-[10px] md:text-xs uppercase shadow-sm flex items-center justify-center gap-2 btn-touch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="21" y1="10" x2="3" y2="10"/></svg>
-          Buat GIF
+        <button @click="toggleGifMode" class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 h-12 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch active:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="21" y1="10" x2="3" y2="10"/></svg>
+          GIF
         </button>
-        <button @click="downloadAll" class="flex-[2] bg-[#fbdc00] text-gray-900 h-14 rounded-2xl font-bold text-xs md:text-sm uppercase shadow-lg btn-touch flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+        <button @click="downloadAll" class="flex-[2] bg-[#fbdc00] text-gray-900 h-12 rounded-xl font-bold text-xs shadow-md btn-touch flex items-center justify-center gap-1.5 active:bg-yellow-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
           Simpan Semua
         </button>
       </div>
 
-      <div v-if="gifMode" class="flex gap-3">
-        <button @click="toggleGifMode" class="flex-1 bg-gray-100 text-gray-600 h-14 rounded-2xl font-bold text-xs uppercase btn-touch">Batal</button>
-        <button @click="generateGIF" class="flex-[2] bg-[#355faa] text-white h-14 rounded-2xl font-bold text-xs uppercase shadow-lg btn-touch">
+      <div v-if="gifMode" class="flex gap-2">
+        <button @click="toggleGifMode" class="flex-1 bg-gray-50 text-gray-600 h-12 rounded-xl font-bold text-xs btn-touch border border-gray-200">Batal</button>
+        <button @click="generateGIF" class="flex-[2] bg-[#355faa] text-white h-12 rounded-xl font-bold text-xs shadow-md btn-touch flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
           Proses GIF ({{ selectedGifUrls.size }})
         </button>
       </div>
