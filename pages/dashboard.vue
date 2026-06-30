@@ -3,6 +3,7 @@ definePageMeta({ middleware: 'auth' })
 
 const data = ref(null)
 const showCreateModal = ref(false)
+const showUploadModal = ref(false)
 const showEditModal = ref(false)
 const editingId = ref('')
 
@@ -168,10 +169,16 @@ onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) }
                   0 MB (G-Drive API)
                 </p>
               </div>
-              <button @click="showCreateModal = true" class="hidden md:flex bg-[#355faa] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-[#2d5191] items-center gap-2 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Buat Link Baru
-              </button>
+              <div class="flex gap-3">
+                <button @click="showUploadModal = true" class="hidden md:flex bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-emerald-700 items-center gap-2 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload Foto
+                </button>
+                <button @click="showCreateModal = true" class="hidden md:flex bg-[#355faa] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-[#2d5191] items-center gap-2 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Buat Link Baru
+                </button>
+              </div>
             </div>
           </div>
 
@@ -412,5 +419,7 @@ onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) }
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
+
+      <UploadModal v-if="showUploadModal" @close="showUploadModal = false" />
   </div>
 </template>

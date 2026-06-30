@@ -25,6 +25,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     adminPassword: 'oresnaporefun',
     gdriveApiKey: 'AIzaSyDCLkm6elVRsozVyg48Aejd3K1nEl-7U2g',
+    gdriveServiceAccount: '',
+    gdriveUploadFolderId: '',
   },
   app: {
     head: {

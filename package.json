@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "googleapis": "^173.0.0",
     "nuxt": "^3.16.2",
     "vue": "latest",
     "vue-router": "latest"
@@ -17,7 +18,7 @@
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.13.2",
     "@types/node": "^22.14.1",
-    "typescript": "^5.8.3",
-    "lucide-vue-next": "^0.488.0"
+    "lucide-vue-next": "^0.488.0",
+    "typescript": "^5.8.3"
   }
 }
