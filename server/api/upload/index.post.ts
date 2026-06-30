@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const folderId = await createDriveFolder(sanitizedName, parentFolderId)
+    await makeFolderPublic(folderId).catch(() => {})
     const albumId = generateAlbumId()
     const driveLink = `https://drive.google.com/drive/folders/${folderId}`
     const db = await getDb()

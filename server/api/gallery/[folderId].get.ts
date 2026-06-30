@@ -28,9 +28,8 @@ export default defineEventHandler(async (event) => {
       files: files.map((f) => ({
         id: f.id,
         name: f.name,
-        thumbnailLink: f.thumbnailLink || '',
-        displayUrl: (f.thumbnailLink || '').replace(/=s\d+/, '=s800'),
-        downloadUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${config.gdriveApiKey}`,
+        displayUrl: `/api/proxy/image/${f.id}`,
+        downloadUrl: `/api/proxy/image/${f.id}`,
       })),
     }
   } catch (error: any) {
