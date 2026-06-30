@@ -39,10 +39,6 @@ function removeFile(index: number) {
   files.value.splice(index, 1)
 }
 
-function getObjectUrl(file: File) {
-  return URL.createObjectURL(file)
-}
-
 async function uploadOneFile(albumId: string, file: File): Promise<boolean> {
   const body = new FormData()
   body.append('file', file)
@@ -191,12 +187,13 @@ const totalSize = computed(() => {
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-bold text-gray-500 uppercase">{{ files.length }} File ({{ totalSize }})</span>
           </div>
-          <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            <div v-for="(file, i) in files" :key="i" class="relative group aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-              <img :src="getObjectUrl(file)" class="w-full h-full object-cover">
-              <button @click="removeFile(i)" class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold">×</button>
-            </div>
+        <div class="flex flex-wrap gap-2">
+          <div v-for="(file, i) in files" :key="i" class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">
+            <span class="font-medium text-gray-700 truncate max-w-[120px]">{{ file.name }}</span>
+            <span class="text-gray-400 shrink-0">{{ (file.size / 1024).toFixed(0) }} KB</span>
+            <button @click="removeFile(i)" class="text-red-500 hover:text-red-700 font-bold shrink-0">×</button>
           </div>
+        </div>
         </div>
 
         <p v-if="uploadError" class="text-red-500 text-xs font-bold mb-3">{{ uploadError }}</p>
