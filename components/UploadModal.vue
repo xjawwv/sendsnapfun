@@ -43,6 +43,13 @@ function getObjectUrl(file: File) {
   return URL.createObjectURL(file)
 }
 
+async function uploadOneFile(albumId: string, file: File): Promise<boolean> {
+  const body = new FormData()
+  body.append('file', file)
+  const res = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
+  return res.success
+}
+
 async function handleUpload() {
   if (!formName.value || files.value.length === 0) return
 
@@ -70,19 +77,19 @@ async function handleUpload() {
     }
 
     const albumId = folderRes.album_id
+    let failed = false
 
-    for (let i = 0; i < files.value.length; i++) {
-      currentFile.value = i + 1
-      const body = new FormData()
-      body.append('file', files.value[i])
+    await Promise.all(files.value.map(async (file) => {
+      if (failed) return
+      const ok = await uploadOneFile(albumId, file)
+      if (!ok) { failed = true; return }
+      currentFile.value++
+    }))
 
-      const fileRes = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
-
-      if (!fileRes.success) {
-        uploadError.value = `Gagal upload ${files.value[i].name}: ${fileRes.message}`
-        uploading.value = false
-        return
-      }
+    if (failed) {
+      uploadError.value = 'Gagal mengupload salah satu file.'
+      uploading.value = false
+      return
     }
 
     alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
