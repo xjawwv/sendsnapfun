@@ -37,6 +37,10 @@ function removeFile(index: number) {
   files.value.splice(index, 1)
 }
 
+function getObjectUrl(file: File) {
+  return URL.createObjectURL(file)
+}
+
 async function handleUpload() {
   if (!formName.value || files.value.length === 0) return
 
@@ -140,7 +144,7 @@ const totalSize = computed(() => {
         </div>
         <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
           <div v-for="(file, i) in files" :key="i" class="relative group aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-            <img :src="window.URL.createObjectURL(file)" class="w-full h-full object-cover">
+            <img :src="getObjectUrl(file)" class="w-full h-full object-cover">
             <button @click="removeFile(i)" class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold">×</button>
           </div>
         </div>
