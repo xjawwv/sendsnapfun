@@ -8,7 +8,7 @@ function getAuth() {
     throw createError({ statusCode: 500, statusMessage: 'Google Drive service account not configured' })
   }
 
-  const credentials = JSON.parse(serviceAccount)
+  const credentials = typeof serviceAccount === 'string' ? JSON.parse(serviceAccount) : serviceAccount
 
   const auth = new google.auth.GoogleAuth({
     credentials,
