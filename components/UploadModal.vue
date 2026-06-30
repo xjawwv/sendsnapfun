@@ -183,18 +183,10 @@ const totalSize = computed(() => {
           </div>
         </div>
 
-        <div v-if="files.length > 0" class="mb-6">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-bold text-gray-500 uppercase">{{ files.length }} File ({{ totalSize }})</span>
-          </div>
-        <div class="flex flex-wrap gap-2">
-          <div v-for="(file, i) in files" :key="i" class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">
-            <span class="font-medium text-gray-700 truncate max-w-[120px]">{{ file.name }}</span>
-            <span class="text-gray-400 shrink-0">{{ (file.size / 1024).toFixed(0) }} KB</span>
-            <button @click="removeFile(i)" class="text-red-500 hover:text-red-700 font-bold shrink-0">×</button>
-          </div>
-        </div>
-        </div>
+      <div v-if="files.length > 0" class="mb-6 flex items-center justify-between">
+        <p class="text-xs font-bold text-gray-500 uppercase">{{ files.length }} File ({{ totalSize }})</p>
+        <button @click="files = []" class="text-xs font-bold text-red-500 hover:text-red-700">Hapus Semua</button>
+      </div>
 
         <p v-if="uploadError" class="text-red-500 text-xs font-bold mb-3">{{ uploadError }}</p>
 
