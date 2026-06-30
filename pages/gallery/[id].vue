@@ -13,8 +13,11 @@ const gifProcessing = ref(false)
 const showGifModal = ref(false)
 const showDownloadModal = ref(false)
 const downloadProgress = ref('')
+const visibleCount = ref(0)
+const BATCH_SIZE = 6
 
 let timerInterval = null
+let scrollObserver = null
 
 async function loadAlbum() {
   try {
@@ -113,8 +116,31 @@ function generateGIF() {
   })
 }
 
-onMounted(async () => { await loadAlbum(); if (album.value) startTimer() })
-onUnmounted(() => { if (timerInterval) clearInterval(timerInterval) })
+function startLazyLoad() {
+  visibleCount.value = BATCH_SIZE
+  scrollObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting && visibleCount.value < photos.value.length) {
+        visibleCount.value = Math.min(visibleCount.value + BATCH_SIZE, photos.value.length)
+      }
+    }
+  }, { rootMargin: '200px' })
+
+  nextTick(() => {
+    const sentinel = document.getElementById('scroll-sentinel')
+    if (sentinel) scrollObserver.observe(sentinel)
+  })
+}
+
+onMounted(async () => {
+  await loadAlbum()
+  if (album.value) { startTimer(); startLazyLoad() }
+})
+
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval)
+  if (scrollObserver) scrollObserver.disconnect()
+})
 </script>
 
 <template>
@@ -170,7 +196,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval) })
         <p class="text-sm text-center px-4">{{ errorMsg }}</p>
       </div>
       <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100">
+        <div v-for="(photo, i) in photos.slice(0, visibleCount)" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100">
           <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous">
           <div v-if="!gifMode" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
             <button @click="downloadSingle(photo.downloadUrl, 'SnapFun_' + album.paket + '_' + album.name + '_' + (i+1) + '.' + (photo.name.split('.').pop() || 'jpg'))" class="w-full bg-white text-[#355faa] py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 shadow-lg btn-touch">Unduh</button>
@@ -184,6 +210,9 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval) })
             </div>
           </label>
         </div>
+      </div>
+      <div v-if="visibleCount < photos.length" id="scroll-sentinel" class="flex justify-center py-8 text-gray-400">
+        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
       </div>
       <div class="mt-10 text-center px-6 pb-12"><p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">Snap Fun Studio</p></div>
     </main>
