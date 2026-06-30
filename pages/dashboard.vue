@@ -150,7 +150,7 @@ onMounted(async () => { await loadData(); setInterval(() => loadData(), 60000) }
       </header>
 
       <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative">
-        <div v-if="data" class="flex flex-col gap-8 pb-32">
+        <div v-if="data" class="flex flex-col gap-8 pb-8">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek (Aktif)</p>
