@@ -28,8 +28,8 @@ export default defineEventHandler(async (event) => {
       files: files.map((f) => ({
         id: f.id,
         name: f.name,
-        displayUrl: `/api/proxy/image/${f.id}`,
-        downloadUrl: `/api/proxy/image/${f.id}`,
+        displayUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${config.gdriveApiKey}`,
+        downloadUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${config.gdriveApiKey}`,
       })),
     }
   } catch (error: any) {
