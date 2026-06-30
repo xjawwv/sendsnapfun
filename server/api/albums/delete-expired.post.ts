@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const now = Math.floor(Date.now() / 1000)
 
   for (const id of Object.keys(db)) {
+    if (id.startsWith('_')) continue
     if (now > db[id].expires_at) {
       try { await deleteDriveFolder(db[id].folder_id) } catch {}
       delete db[id]

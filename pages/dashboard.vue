@@ -106,6 +106,7 @@ async function handleLogout() {
 }
 
 function countdown(expiresAt) {
+  if (!expiresAt) return 'N/A'
   const diff = expiresAt * 1000 - Date.now()
   if (diff < 0) return 'Expired'
   return Math.floor(diff / 86400000) + ' Hr ' + Math.floor((diff % 86400000) / 3600000) + ' Jm'

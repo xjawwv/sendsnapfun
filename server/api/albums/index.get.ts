@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
   const looseProjects: Album[] = []
 
   for (const id of Object.keys(db).reverse()) {
+    if (id.startsWith('_')) continue
     const album = db[id]
     if (now > album.expires_at) {
       expiredProjects.push(album)

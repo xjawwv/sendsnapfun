@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const groupName = body.group_name
 
   for (const id of Object.keys(db)) {
+    if (id.startsWith('_')) continue
     if ((db[id].group_name || '') === groupName) {
       try { await deleteDriveFolder(db[id].folder_id) } catch {}
       delete db[id]
