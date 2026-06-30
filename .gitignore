@@ -4,6 +4,7 @@ node_modules/
 dist/
 data/
 data/thumbs/
+.data/
 *.log
 .env
 *.service-account.json
