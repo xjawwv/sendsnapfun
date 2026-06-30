@@ -5,7 +5,10 @@ export default defineEventHandler(async (event) => {
 
   const ids: string[] = body.ids || []
   for (const id of ids) {
-    if (db[id]) delete db[id]
+    if (db[id]) {
+      try { await deleteDriveFolder(db[id].folder_id) } catch {}
+      delete db[id]
+    }
   }
 
   await saveDb(db)

@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
 
   for (const id of Object.keys(db)) {
     if (now > db[id].expires_at) {
+      try { await deleteDriveFolder(db[id].folder_id) } catch {}
       delete db[id]
     }
   }

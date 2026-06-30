@@ -49,3 +49,8 @@ export async function makeFolderPublic(folderId: string) {
     },
   })
 }
+
+export async function deleteDriveFolder(folderId: string) {
+  const drive = await getAuthenticatedDrive()
+  await drive.files.delete({ fileId: folderId })
+}
