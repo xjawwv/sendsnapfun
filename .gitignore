@@ -3,6 +3,7 @@ node_modules/
 .output/
 dist/
 data/
+data/thumbs/
 *.log
 .env
 *.service-account.json

@@ -13,7 +13,8 @@ const gifProcessing = ref(false)
 const showGifModal = ref(false)
 const showDownloadModal = ref(false)
 const downloadProgress = ref('')
-const loadedImages = ref(new Set())
+const selectMode = ref(false)
+const selectedPhotos = ref(new Set())
 
 let timerInterval = null
 
@@ -48,36 +49,56 @@ function startTimer() {
     const d = Math.floor(diff / 86400000)
     const h = Math.floor((diff % 86400000) / 3600000)
     const m = Math.floor((diff % 3600000) / 60000)
-    timerEl.innerText = (d > 0 ? d + 'H ' : '') + String(h).padStart(2,'0') + 'j ' + String(m).padStart(2,'0') + 'm'
+    timerEl.innerText = (d > 0 ? d + 'H ' : '') + String(h).padStart(2, '0') + 'j ' + String(m).padStart(2, '0') + 'm'
   }
   update()
   timerInterval = setInterval(update, 60000)
 }
 
-async function downloadAll() {
+function toggleSelectPhoto(photoId) {
+  if (selectedPhotos.value.has(photoId)) {
+    selectedPhotos.value.delete(photoId)
+  } else {
+    selectedPhotos.value.add(photoId)
+  }
+}
+
+function toggleSelectAll() {
+  if (selectedPhotos.value.size === photos.value.length) {
+    selectedPhotos.value.clear()
+  } else {
+    selectedPhotos.value = new Set(photos.value.map(p => p.id))
+  }
+}
+
+async function downloadSelected() {
+  const toDownload = photos.value.filter(p => selectedPhotos.value.has(p.id))
+  if (toDownload.length === 0) return alert('Pilih minimal 1 foto!')
+
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   showDownloadModal.value = true
   downloadProgress.value = 'Menyiapkan...'
+
   try {
     if (isIOS) {
       downloadProgress.value = 'Menyiapkan file ZIP khusus iPhone/iPad...'
       const zip = new JSZip()
-      for (let i = 0; i < photos.value.length; i++) {
-        downloadProgress.value = 'Menarik foto ' + (i+1) + ' dari ' + photos.value.length + '...'
-        const res = await fetch(photos.value[i].downloadUrl)
+      for (let i = 0; i < toDownload.length; i++) {
+        downloadProgress.value = 'Menarik foto ' + (i+1) + ' dari ' + toDownload.length + '...'
+        const res = await fetch(toDownload[i].downloadUrl)
         const blob = await res.blob()
-        const ext = photos.value[i].name.split('.').pop() || 'jpg'
+        const ext = toDownload[i].name.split('.').pop() || 'jpg'
         zip.file('SnapFun_' + album.value.paket + '_' + album.value.name + '_' + (i+1) + '.' + ext, blob)
       }
       downloadProgress.value = 'Membuat file ZIP...'
       const zipContent = await zip.generateAsync({ type: 'blob' })
       saveAs(zipContent, 'SnapFun_' + album.value.name + '.zip')
     } else {
-      for (let i = 0; i < photos.value.length; i++) {
-        downloadProgress.value = 'Mengunduh foto ' + (i+1) + ' dari ' + photos.value.length + '...'
-        const res = await fetch(photos.value[i].downloadUrl)
+      for (let i = 0; i < toDownload.length; i++) {
+        downloadProgress.value = 'Mengunduh foto ' + (i+1) + ' dari ' + toDownload.length + '...'
+        const res = await fetch(toDownload[i].downloadUrl)
         const blob = await res.blob()
-        const ext = photos.value[i].name.split('.').pop() || 'jpg'
+        const ext = toDownload[i].name.split('.').pop() || 'jpg'
         saveAs(blob, 'SnapFun_' + album.value.paket + '_' + album.value.name + '_' + (i+1) + '.' + ext)
         await new Promise(r => setTimeout(r, 600))
       }
@@ -90,13 +111,26 @@ async function downloadAll() {
   }
 }
 
+async function downloadAll() {
+  selectedPhotos.value = new Set(photos.value.map(p => p.id))
+  await downloadSelected()
+}
+
 async function downloadSingle(url, filename) {
   try {
-    const res = await fetch(url); const blob = await res.blob(); saveAs(blob, filename)
+    const res = await fetch(url)
+    const blob = await res.blob()
+    saveAs(blob, filename)
   } catch { alert('Gagal mengunduh foto.') }
 }
 
-function toggleGifMode() { gifMode.value = !gifMode.value; if (!gifMode.value) selectedGifUrls.value.clear() }
+function toggleGifMode() {
+  gifMode.value = !gifMode.value
+  if (!gifMode.value) selectedGifUrls.value.clear()
+  selectMode.value = false
+  selectedPhotos.value.clear()
+}
+
 function toggleGifSelect(url) {
   if (selectedGifUrls.value.has(url)) selectedGifUrls.value.delete(url)
   else selectedGifUrls.value.add(url)
@@ -114,9 +148,21 @@ function generateGIF() {
   })
 }
 
+function enterSelectMode() {
+  selectMode.value = true
+  selectedPhotos.value.clear()
+  gifMode.value = false
+  selectedGifUrls.value.clear()
+}
+
+function exitSelectMode() {
+  selectMode.value = false
+  selectedPhotos.value.clear()
+}
+
 onMounted(async () => {
   await loadAlbum()
-  if (album.value) { startTimer(); loadedImages.value = new Set(photos.value.map((_, i) => i)) }
+  if (album.value) startTimer()
 })
 
 onUnmounted(() => {
@@ -137,6 +183,27 @@ onUnmounted(() => {
     <p class="text-gray-500 text-sm">Terjadi kesalahan saat memuat data.</p>
   </div>
   <div v-else-if="album" class="min-h-screen bg-[#f9fafb] flex flex-col h-screen overflow-hidden relative">
+
+    <!-- Select Mode Header -->
+    <div v-if="selectMode" class="fixed top-0 left-0 right-0 bg-[#355faa] text-white px-5 py-4 z-[60] shadow-lg flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button @click="toggleSelectAll" class="p-2 bg-white/20 rounded-full text-xs font-bold">
+          {{ selectedPhotos.size === photos.length ? 'Batal Pilih' : 'Pilih Semua' }}
+        </button>
+        <span class="text-sm font-bold">{{ selectedPhotos.size }} foto dipilih</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button @click="downloadSelected" :disabled="selectedPhotos.size === 0" class="bg-[#fbdc00] text-gray-900 px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 disabled:opacity-50">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+          Download
+        </button>
+        <button @click="exitSelectMode" class="p-2 bg-white/20 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- GIF Mode Header -->
     <div v-if="gifMode" class="fixed top-0 left-0 right-0 bg-[#fbdc00] text-gray-900 px-5 py-4 z-[60] shadow-lg flex items-center justify-between">
       <div class="flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#355faa]"><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
@@ -178,10 +245,24 @@ onUnmounted(() => {
       </div>
       <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100">
-          <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous">
-          <div v-if="!gifMode" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+          <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous" decoding="async">
+
+          <!-- Normal overlay (download) -->
+          <div v-if="!gifMode && !selectMode" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
             <button @click="downloadSingle(photo.downloadUrl, 'SnapFun_' + album.paket + '_' + album.name + '_' + (i+1) + '.' + (photo.name.split('.').pop() || 'jpg'))" class="w-full bg-white text-[#355faa] py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 shadow-lg btn-touch">Unduh</button>
           </div>
+
+          <!-- Select mode overlay -->
+          <div v-if="selectMode" class="absolute inset-0 cursor-pointer" @click="toggleSelectPhoto(photo.id)">
+            <div class="absolute top-2 right-2 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all"
+              :class="selectedPhotos.has(photo.id) ? 'bg-[#355faa] border-[#355faa]' : 'bg-white/80 border-white/80'">
+              <svg v-if="selectedPhotos.has(photo.id)" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="absolute inset-0 border-4 transition-all"
+              :class="selectedPhotos.has(photo.id) ? 'border-[#355faa]' : 'border-transparent'"></div>
+          </div>
+
+          <!-- GIF mode overlay -->
           <label v-if="gifMode" class="absolute inset-0 bg-white/0 cursor-pointer">
             <input type="checkbox" class="hidden" :value="photo.downloadUrl" :checked="selectedGifUrls.has(photo.downloadUrl)" @change="toggleGifSelect(photo.downloadUrl)">
             <div class="absolute inset-0 border-4 transition-all flex items-start justify-end p-2" :class="selectedGifUrls.has(photo.downloadUrl) ? 'border-[#355faa] bg-[rgba(53,95,170,0.1)]' : 'border-transparent'">
@@ -195,10 +276,15 @@ onUnmounted(() => {
       <div class="mt-10 text-center px-6 pb-12"><p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">Snap Fun Studio</p></div>
     </main>
 
+    <!-- Bottom Actions -->
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pt-4 pb-6 px-6 z-30 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-      <div v-if="!gifMode" class="flex gap-3">
+      <div v-if="!gifMode && !selectMode" class="flex gap-3">
+        <button @click="enterSelectMode" class="flex-1 bg-white border border-gray-200 text-gray-700 h-14 rounded-2xl font-bold text-[10px] md:text-xs uppercase shadow-sm flex items-center justify-center gap-2 btn-touch">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Pilih Foto
+        </button>
         <button @click="toggleGifMode" class="flex-1 bg-white border border-gray-200 text-gray-700 h-14 rounded-2xl font-bold text-[10px] md:text-xs uppercase shadow-sm flex items-center justify-center gap-2 btn-touch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="21" y1="10" x2="3" y2="10"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="14" y1="18" x2="14" y2="21"/><line x1="10" y1="18" x2="10" y2="21"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="21" y1="10" x2="3" y2="10"/></svg>
           Buat GIF
         </button>
         <button @click="downloadAll" class="flex-[2] bg-[#fbdc00] text-gray-900 h-14 rounded-2xl font-bold text-xs md:text-sm uppercase shadow-lg btn-touch flex items-center justify-center gap-2">
@@ -206,12 +292,16 @@ onUnmounted(() => {
           Simpan Semua
         </button>
       </div>
-      <div v-else class="flex gap-3">
+
+      <div v-if="gifMode" class="flex gap-3">
         <button @click="toggleGifMode" class="flex-1 bg-gray-100 text-gray-600 h-14 rounded-2xl font-bold text-xs uppercase btn-touch">Batal</button>
-        <button @click="generateGIF" class="flex-[2] bg-[#355faa] text-white h-14 rounded-2xl font-bold text-xs uppercase shadow-lg btn-touch">Proses GIF ({{ selectedGifUrls.size }})</button>
+        <button @click="generateGIF" class="flex-[2] bg-[#355faa] text-white h-14 rounded-2xl font-bold text-xs uppercase shadow-lg btn-touch">
+          Proses GIF ({{ selectedGifUrls.size }})
+        </button>
       </div>
     </div>
 
+    <!-- Download Modal -->
     <div v-if="showDownloadModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
       <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm text-center">
         <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#355faa] mx-auto mb-6"></div>
@@ -220,6 +310,7 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- GIF Modal -->
     <div v-if="showGifModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
       <div class="bg-white p-6 rounded-[2rem] w-full max-w-sm">
         <div class="flex justify-between items-center mb-4">
@@ -231,7 +322,7 @@ onUnmounted(() => {
         <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-4 border flex items-center justify-center relative">
           <img v-if="gifResult" :src="gifResult" class="w-full h-full object-contain">
           <div v-if="gifProcessing" class="absolute inset-0 bg-white/80 flex flex-col items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin text-[#355faa] mb-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <svg class="animate-spin text-[#355faa] mb-2" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
             <p class="text-[10px] font-bold text-[#355faa]">Memproses...</p>
           </div>
         </div>
