@@ -9,7 +9,7 @@ const formGroupName = ref('')
 const formHours = ref('168')
 const dragOver = ref(false)
 
-const { uploading, currentFile, totalFiles, uploadError, startUpload, updateProgress, finishUpload } = useUploadState()
+const { uploading, currentFile, totalFiles, uploadError, cancelled, startUpload, updateProgress, finishUpload } = useUploadState()
 
 function onFileInput(e: Event) {
   const input = e.target as HTMLInputElement
@@ -38,15 +38,16 @@ function removeFile(index: number) {
   files.value.splice(index, 1)
 }
 
-async function uploadOneFile(albumId: string, file: File): Promise<boolean> {
+async function uploadOneFile(albumId, file) {
   for (let attempt = 1; attempt <= 3; attempt++) {
+    if (cancelled.value) return false
     try {
       const body = new FormData()
       body.append('file', file)
       const res = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
       if (res.success) return true
     } catch {}
-    if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt))
+    if (attempt < 3 && !cancelled.value) await new Promise(r => setTimeout(r, 1000 * attempt))
   }
   return false
 }
@@ -80,7 +81,7 @@ async function handleUpload() {
     let done = 0
 
     await Promise.all(files.value.map(async (file) => {
-      if (failed) return
+      if (failed || cancelled.value) { failed = true; return }
       const ok = await uploadOneFile(albumId, file)
       if (!ok) { failed = true; return }
       done++
@@ -88,21 +89,18 @@ async function handleUpload() {
     }))
 
     if (failed) {
-      finishUpload('Gagal mengupload salah satu file.')
+      if (!cancelled.value) finishUpload('Gagal mengupload salah satu file.')
+      else finishUpload()
       return
     }
 
     dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
     window.location.reload()
   } catch (err: any) {
-    finishUpload(err.message || 'Terjadi kesalahan jaringan.')
+    if (!cancelled.value) finishUpload(err.message || 'Terjadi kesalahan jaringan.')
+    else finishUpload()
   }
 }
-
-const progressPercent = computed(() => {
-  if (totalFiles.value === 0) return 0
-  return Math.round((currentFile.value / totalFiles.value) * 100)
-})
 
 const totalSize = computed(() => {
   const total = files.value.reduce((sum, f) => sum + f.size, 0)
@@ -121,7 +119,6 @@ const totalSize = computed(() => {
         </button>
       </div>
 
-      <!-- Upload form -->
       <div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>

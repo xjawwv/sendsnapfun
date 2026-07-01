@@ -4,17 +4,23 @@ export const useUploadState = () => {
   const totalFiles = useState('uploadTotalFiles', () => 0)
   const currentFileName = useState('uploadCurrentFileName', () => '')
   const uploadError = useState('uploadError', () => '')
+  const cancelled = useState('uploadCancelled', () => false)
 
   function startUpload(total: number) {
     uploading.value = true
     currentFile.value = 0
     totalFiles.value = total
     uploadError.value = ''
+    cancelled.value = false
   }
 
   function updateProgress(current: number, fileName: string) {
     currentFile.value = current
     currentFileName.value = fileName
+  }
+
+  function cancelUpload() {
+    cancelled.value = true
   }
 
   function finishUpload(error?: string) {
@@ -26,6 +32,7 @@ export const useUploadState = () => {
     currentFile.value = 0
     totalFiles.value = 0
     currentFileName.value = ''
+    cancelled.value = false
   }
 
   return {
@@ -34,8 +41,10 @@ export const useUploadState = () => {
     totalFiles,
     currentFileName,
     uploadError,
+    cancelled,
     startUpload,
     updateProgress,
+    cancelUpload,
     finishUpload,
   }
 }

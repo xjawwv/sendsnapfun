@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { uploading, currentFile, totalFiles, currentFileName } = useUploadState()
+const { uploading, currentFile, totalFiles, currentFileName, cancelUpload } = useUploadState()
 const progressPercent = computed(() => {
   if (totalFiles.value === 0) return 0
   return Math.round((currentFile.value / totalFiles.value) * 100)
@@ -8,7 +8,10 @@ const progressPercent = computed(() => {
 
 <template>
   <div v-if="uploading" class="fixed bottom-6 right-6 z-[60]">
-    <div class="bg-white border border-gray-200 p-4 rounded-2xl shadow-2xl w-80 flex items-center gap-4 animate-in slide-in-from-bottom-5">
+    <div class="bg-white border border-gray-200 p-4 rounded-2xl shadow-2xl w-80 flex items-center gap-4 animate-in relative">
+      <button @click="cancelUpload" class="absolute -top-2 -right-2 w-6 h-6 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 z-10">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <div class="w-10 h-10 rounded-full border-4 border-gray-100 border-t-[#355faa] animate-spin shrink-0"></div>
       <div class="flex-1 min-w-0">
         <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">{{ currentFileName || 'Mengupload...' }}</p>

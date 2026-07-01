@@ -1,9 +1,10 @@
+let resolveFn: ((value: boolean) => void) | null = null
+
 export const useDialog = () => {
   const show = useState('dialogShow', () => false)
   const type = useState<'alert' | 'confirm'>('dialogType', () => 'alert')
   const title = useState('dialogTitle', () => '')
   const message = useState('dialogMessage', () => '')
-  let resolveFn: ((value: boolean) => void) | null = null
 
   function alert(msg: string, t?: string) {
     type.value = 'alert'
