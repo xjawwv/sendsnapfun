@@ -165,19 +165,28 @@ async function handleEditUpload(e) {
   startUpload(files.length)
 
   try {
+    const tokenRes = await $fetch('/api/auth/google/token')
+    const token = tokenRes.token
+
+    const albumRes = await $fetch('/api/albums/' + editingId.value)
+    const folderId = albumRes.album.folder_id
+
     for (let i = 0; i < files.length; i++) {
       updateProgress(i + 1, files[i].name)
-      let ok = false
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          const body = new FormData()
-          body.append('file', files[i])
-          const res = await $fetch('/api/upload/' + editingId.value + '/file', { method: 'POST', body })
-          if (res.success) { ok = true; break }
-        } catch {}
-        if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt))
+      const metadata = { name: files[i].name, parents: [folderId] }
+      const form = new FormData()
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
+      form.append('file', files[i])
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: form,
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error?.message || 'Gagal upload ' + files[i].name)
       }
-      if (!ok) throw new Error('Gagal upload ' + files[i].name)
     }
     finishUpload()
     dialog.alert('Upload selesai! ' + files.length + ' foto berhasil diupload.')

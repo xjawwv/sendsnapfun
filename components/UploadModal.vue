@@ -38,18 +38,51 @@ function removeFile(index: number) {
   files.value.splice(index, 1)
 }
 
-async function uploadOneFile(albumId, file) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    if (cancelled.value) return false
-    try {
-      const body = new FormData()
-      body.append('file', file)
-      const res = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
-      if (res.success) return true
-    } catch {}
-    if (attempt < 3 && !cancelled.value) await new Promise(r => setTimeout(r, 1000 * attempt))
+async function getAccessToken() {
+  const res = await $fetch('/api/auth/google/token')
+  return res.token
+}
+
+async function createDriveFolderBrowser(token, name, parentId) {
+  const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [parentId],
+    }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error?.message || 'Gagal membuat folder')
+  return data.id
+}
+
+async function uploadFileToDriveBrowser(token, folderId, file) {
+  const metadata = {
+    name: file.name,
+    parents: [folderId],
   }
-  return false
+
+  const form = new FormData()
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
+  form.append('file', file)
+
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: form,
+  })
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error?.message || 'Gagal upload file')
+  }
 }
 
 async function handleUpload() {
@@ -59,32 +92,24 @@ async function handleUpload() {
   startUpload(files.value.length)
 
   try {
-    const folderRes = await $fetch('/api/upload', {
-      method: 'POST',
-      body: {
-        name: formName.value,
-        paket: formPaket.value,
-        group_name: formGroupName.value,
-        hours: formHours.value,
-        total_files: files.value.length,
-      },
-    })
+    const token = await getAccessToken()
+    const parentId = '1YgBqzxxuq71NmHLi7MjnnLT4XcnRCWfb'
 
-    if (!folderRes.success) {
-      finishUpload(folderRes.message || 'Gagal membuat folder.')
-      return
-    }
+    updateProgress(0, 'Membuat folder...')
+    const folderId = await createDriveFolderBrowser(token, formName.value, parentId)
 
-    const albumId = folderRes.album_id
     let failed = false
     let done = 0
 
     await Promise.all(files.value.map(async (file) => {
       if (failed || cancelled.value) { failed = true; return }
-      const ok = await uploadOneFile(albumId, file)
-      if (!ok) { failed = true; return }
-      done++
-      updateProgress(done, file.name)
+      try {
+        await uploadFileToDriveBrowser(token, folderId, file)
+        done++
+        updateProgress(done, file.name)
+      } catch (e) {
+        failed = true
+      }
     }))
 
     if (failed) {
@@ -93,8 +118,19 @@ async function handleUpload() {
       return
     }
 
+    await $fetch('/api/albums', {
+      method: 'POST',
+      body: {
+        name: formName.value,
+        paket: formPaket.value,
+        drive_link: `https://drive.google.com/drive/folders/${folderId}`,
+        group_name: formGroupName.value,
+        hours: formHours.value,
+      },
+    })
+
     finishUpload()
-    dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
+    dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload.`)
     window.location.reload()
   } catch (err: any) {
     finishUpload(err.message || 'Terjadi kesalahan jaringan.')
