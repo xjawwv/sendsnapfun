@@ -71,8 +71,7 @@ async function handleUpload() {
     })
 
     if (!folderRes.success) {
-      dialog.alert(folderRes.message || 'Gagal membuat folder.')
-      finishUpload()
+      finishUpload(folderRes.message || 'Gagal membuat folder.')
       return
     }
 
@@ -94,11 +93,11 @@ async function handleUpload() {
       return
     }
 
+    finishUpload()
     dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
     window.location.reload()
   } catch (err: any) {
-    if (!cancelled.value) finishUpload(err.message || 'Terjadi kesalahan jaringan.')
-    else finishUpload()
+    finishUpload(err.message || 'Terjadi kesalahan jaringan.')
   }
 }
 

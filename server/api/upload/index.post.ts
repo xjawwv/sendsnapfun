@@ -14,6 +14,11 @@ export default defineEventHandler(async (event) => {
     return { success: false, message: 'Folder tujuan upload belum dikonfigurasi.' }
   }
 
+  const tokens = await getStoredTokens()
+  if (!tokens?.access_token) {
+    return { success: false, message: 'Google Drive belum terhubung. Silakan connect Google Drive terlebih dahulu di sidebar.' }
+  }
+
   const sanitizedName = name.replace(/[<>:"/\\|?*]/g, '_').substring(0, 100)
 
   try {
