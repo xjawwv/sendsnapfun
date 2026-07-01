@@ -493,75 +493,78 @@ onMounted(async () => {
       </div>
 
       <div id="edit-panel" v-if="showEditModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4" @click.self="showEditModal = false">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-xl">Edit Data</h3>
             <button @click="showEditModal = false" class="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <form @submit.prevent="handleEdit" class="space-y-4">
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Paket</label>
-              <select v-model="editPaket" class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
-                <option value="Self Photo">Self Photo</option>
-                <option value="Photobox">Photobox</option>
-                <option value="Pas Photo">Pas Photo</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Nama Klien</label>
-              <input type="text" v-model="editName" required class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Link Google Drive Baru</label>
-              <input type="url" v-model="editDriveLink" required class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Pindah ke Folder Dashboard</label>
-              <input type="text" v-model="editGroupName" class="w-full bg-gray-50 p-3 rounded-xl border outline-none" placeholder="Kosongkan jika tak ingin dikelompokkan...">
-            </div>
-            <button type="submit" class="w-full bg-[#355faa] text-white py-3 rounded-xl font-bold btn-touch text-sm">Simpan</button>
-          </form>
 
-          <div class="mt-6 pt-5 border-t border-gray-100">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-bold text-sm text-gray-700">Foto ({{ editPhotos.length }})</h4>
-              <label class="bg-[#355faa] text-white px-4 py-2 rounded-xl text-xs font-bold btn-touch flex items-center gap-1.5 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload
-                <input type="file" multiple accept="image/*" class="hidden" @change="handleEditUpload">
-              </label>
-            </div>
-            <div v-if="editPhotos.length > 0" class="relative mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input v-model="editPhotoSearch" type="text" placeholder="Cari nama file..." class="w-full bg-gray-50 pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-[#355faa]">
-            </div>
-            <div v-if="editPhotosLoading" class="text-center py-6 text-gray-400">
-              <svg class="animate-spin mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-              <p class="text-xs">Memuat daftar foto...</p>
-            </div>
-            <div v-else-if="editPhotos.length === 0" class="text-center py-6 text-gray-400">
-              <p class="text-xs">Belum ada foto di folder ini.</p>
-            </div>
-            <div v-else-if="filteredEditPhotos.length === 0" class="text-center py-6 text-gray-400">
-              <p class="text-xs">Tidak ada hasil ditemukan.</p>
-            </div>
-            <div v-else class="max-h-48 overflow-y-auto rounded-xl border border-gray-100">
-              <table class="w-full text-xs">
-                <thead class="sticky top-0 bg-gray-50">
-                  <tr>
-                    <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase w-10">#</th>
-                    <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase">Nama File</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50">
-                  <tr v-for="(photo, i) in filteredEditPhotos" :key="photo.id" class="hover:bg-gray-50">
-                    <td class="py-2 px-3 text-gray-400 font-mono">{{ i + 1 }}</td>
-                    <td class="py-2 px-3 text-gray-700 truncate max-w-[250px]">{{ photo.name }}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="flex flex-col md:flex-row gap-6">
+            <form @submit.prevent="handleEdit" class="space-y-4 md:w-[320px] shrink-0">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Paket</label>
+                <select v-model="editPaket" class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
+                  <option value="Self Photo">Self Photo</option>
+                  <option value="Photobox">Photobox</option>
+                  <option value="Pas Photo">Pas Photo</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Nama Klien</label>
+                <input type="text" v-model="editName" required class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Link Google Drive Baru</label>
+                <input type="url" v-model="editDriveLink" required class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Pindah ke Folder Dashboard</label>
+                <input type="text" v-model="editGroupName" class="w-full bg-gray-50 p-3 rounded-xl border outline-none" placeholder="Kosongkan jika tak ingin dikelompokkan...">
+              </div>
+              <button type="submit" class="w-full bg-[#355faa] text-white py-3 rounded-xl font-bold btn-touch text-sm">Simpan</button>
+            </form>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-bold text-sm text-gray-700">Foto ({{ editPhotos.length }})</h4>
+                <label class="bg-[#355faa] text-white px-4 py-2 rounded-xl text-xs font-bold btn-touch flex items-center gap-1.5 cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload
+                  <input type="file" multiple accept="image/*" class="hidden" @change="handleEditUpload">
+                </label>
+              </div>
+              <div v-if="editPhotos.length > 0" class="relative mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input v-model="editPhotoSearch" type="text" placeholder="Cari nama file..." class="w-full bg-gray-50 pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-[#355faa]">
+              </div>
+              <div v-if="editPhotosLoading" class="text-center py-10 text-gray-400">
+                <svg class="animate-spin mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <p class="text-xs">Memuat daftar foto...</p>
+              </div>
+              <div v-else-if="editPhotos.length === 0" class="text-center py-10 text-gray-400">
+                <p class="text-xs">Belum ada foto di folder ini.</p>
+              </div>
+              <div v-else-if="filteredEditPhotos.length === 0" class="text-center py-10 text-gray-400">
+                <p class="text-xs">Tidak ada hasil ditemukan.</p>
+              </div>
+              <div v-else class="max-h-[400px] overflow-y-auto rounded-xl border border-gray-100">
+                <table class="w-full text-xs">
+                  <thead class="sticky top-0 bg-gray-50">
+                    <tr>
+                      <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase w-10">#</th>
+                      <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase">Nama File</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50">
+                    <tr v-for="(photo, i) in filteredEditPhotos" :key="photo.id" class="hover:bg-gray-50">
+                      <td class="py-2 px-3 text-gray-400 font-mono">{{ i + 1 }}</td>
+                      <td class="py-2 px-3 text-gray-700 truncate">{{ photo.name }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
