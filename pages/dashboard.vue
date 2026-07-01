@@ -128,6 +128,24 @@ async function handleEdit() {
   } catch { dialog.alert('Gagal menyimpan.') }
 }
 
+async function deletePhoto(fileId, fileName) {
+  if (!await dialog.confirm('Hapus foto "' + fileName + '" dari Google Drive?')) return
+  try {
+    const res = await $fetch('/api/albums/' + editingId.value + '/photos/delete', {
+      method: 'POST',
+      body: { file_id: fileId },
+    })
+    if (res.success) {
+      await loadEditPhotos(editingId.value)
+      await loadData()
+    } else {
+      dialog.alert(res.message || 'Gagal menghapus foto.')
+    }
+  } catch {
+    dialog.alert('Gagal menghapus foto.')
+  }
+}
+
 async function handleEditUpload(e) {
   const files = e.target.files
   if (!files || files.length === 0) return
@@ -555,12 +573,18 @@ onMounted(async () => {
                     <tr>
                       <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase w-10">#</th>
                       <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase">Nama File</th>
+                      <th class="w-8"></th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-50">
-                    <tr v-for="(photo, i) in filteredEditPhotos" :key="photo.id" class="hover:bg-gray-50">
+                    <tr v-for="(photo, i) in filteredEditPhotos" :key="photo.id" class="hover:bg-gray-50 group">
                       <td class="py-2 px-3 text-gray-400 font-mono">{{ i + 1 }}</td>
                       <td class="py-2 px-3 text-gray-700 truncate">{{ photo.name }}</td>
+                      <td class="py-2 px-3">
+                        <button @click="deletePhoto(photo.id, photo.name)" class="text-gray-400 hover:text-red-500 p-1 rounded transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
