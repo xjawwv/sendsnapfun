@@ -8,3 +8,4 @@ data/thumbs/
 *.log
 .env
 *.service-account.json
+*.zip
