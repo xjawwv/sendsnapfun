@@ -69,12 +69,14 @@ async function handleUpload() {
 
     const albumId = folderRes.album_id
     let failed = false
+    let done = 0
 
     await Promise.all(files.value.map(async (file) => {
       if (failed) return
       const ok = await uploadOneFile(albumId, file)
       if (!ok) { failed = true; return }
-      updateProgress(currentFile.value + 1, file.name)
+      done++
+      updateProgress(done, file.name)
     }))
 
     if (failed) {
