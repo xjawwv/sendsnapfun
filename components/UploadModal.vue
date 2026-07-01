@@ -92,16 +92,7 @@ async function handleUpload() {
     updateProgress(0, 'Membuat folder...')
     const folderId = await createDriveFolderBrowser(token, formName.value, parentId)
 
-    for (let i = 0; i < files.value.length; i++) {
-      if (cancelled.value) break
-      updateProgress(i, files.value[i].name)
-      await uploadFileToDriveBrowser(token, folderId, files.value[i])
-      updateProgress(i + 1, files.value[i].name)
-    }
-
-    if (cancelled.value) { finishUpload(); return }
-
-    await $fetch('/api/albums', {
+    const albumRes = await $fetch('/api/albums', {
       method: 'POST',
       body: {
         name: formName.value,
@@ -111,6 +102,15 @@ async function handleUpload() {
         hours: formHours.value,
       },
     })
+
+    for (let i = 0; i < files.value.length; i++) {
+      if (cancelled.value) break
+      updateProgress(i, files.value[i].name)
+      await uploadFileToDriveBrowser(token, folderId, files.value[i])
+      updateProgress(i + 1, files.value[i].name)
+    }
+
+    if (cancelled.value) { finishUpload(); return }
 
     finishUpload()
     dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload.`)

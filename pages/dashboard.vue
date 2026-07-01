@@ -17,6 +17,7 @@ const editPhotosLoading = ref(false)
 const editUploadFile = ref(null)
 const editPhotoSearch = ref('')
 const isDeleting = ref(false)
+const avgUploadPerMin = ref(0)
 
 const formIsBatch = ref(false)
 const formName = ref('')
@@ -294,38 +295,36 @@ onMounted(async () => {
 
       <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative">
         <div v-if="data" class="flex flex-col gap-8 pb-8">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-4">
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek (Aktif)</p>
+              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek</p>
               <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ data.activeLinks }}</p>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Perlu Dihapus</p>
               <p class="text-2xl md:text-3xl font-bold text-red-500">{{ data.expiredCount }}</p>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm md:col-span-2 flex items-center justify-between">
-              <div>
-                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive Storage</p>
-                <div v-if="driveChecking" class="flex items-center gap-2 text-sm text-gray-400">
-                  <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                  Checking...
-                </div>
-                <p v-else-if="driveConnected" class="text-sm md:text-base font-bold text-gray-800">
-                  {{ formatBytes(driveUsage) }} / {{ formatBytes(driveLimit) }}
-                </p>
-                <p v-else class="text-lg md:text-xl font-bold text-gray-400 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                  Not Connected
-                </p>
-              </div>
-              <div class="flex gap-3">
-                <button @click="showUploadModal = true" class="hidden md:flex bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-emerald-700 items-center gap-2 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Upload Foto
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Upload Speed</p>
+              <p class="text-2xl md:text-3xl font-bold" :class="avgUploadPerMin > 0 ? 'text-emerald-500' : 'text-gray-400'">
+                {{ avgUploadPerMin > 0 ? avgUploadPerMin : '-' }}
+              </p>
+              <p class="text-[10px] text-gray-400 mt-0.5">file/menit</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Google Drive</p>
+              <p class="text-sm md:text-base font-bold text-gray-800">{{ formatBytes(driveUsage) }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">dari {{ formatBytes(driveLimit) }}</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-center">
+              <div class="flex gap-2">
+                <button @click="showUploadModal = true" class="bg-[#059669] text-white px-4 py-2.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 btn-touch">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload
                 </button>
-                <button @click="showCreateModal = true" class="hidden md:flex bg-[#355faa] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-[#2d5191] items-center gap-2 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Buat Link Baru
+                <button @click="showCreateModal = true" class="bg-[#355faa] text-white px-4 py-2.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 btn-touch">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Buat Link
                 </button>
               </div>
             </div>

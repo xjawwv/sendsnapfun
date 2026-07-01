@@ -1,8 +1,14 @@
 <script setup lang="ts">
-const { uploading, currentFile, totalFiles, currentFileName, cancelUpload } = useUploadState()
+const { uploading, currentFile, totalFiles, currentFileName, avgPerMinute, getEstimatedSeconds, cancelUpload } = useUploadState()
 const progressPercent = computed(() => {
   if (totalFiles.value === 0) return 0
   return Math.round((currentFile.value / totalFiles.value) * 100)
+})
+const estimatedTime = computed(() => {
+  const s = getEstimatedSeconds()
+  if (s <= 0) return ''
+  if (s < 60) return s + ' detik'
+  return Math.floor(s / 60) + 'm ' + (s % 60) + 'd'
 })
 </script>
 
@@ -18,7 +24,10 @@ const progressPercent = computed(() => {
         <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-1">
           <div class="h-full bg-[#355faa] transition-all duration-300" :style="{ width: progressPercent + '%' }"></div>
         </div>
-        <p class="text-[10px] font-bold text-right text-[#355faa]">{{ currentFile }} / {{ totalFiles }}</p>
+        <div class="flex justify-between items-center">
+          <p class="text-[10px] font-bold text-right text-[#355faa]">{{ currentFile }} / {{ totalFiles }}</p>
+          <p v-if="estimatedTime" class="text-[10px] text-gray-400">~{{ estimatedTime }} lagi</p>
+        </div>
       </div>
     </div>
   </div>
