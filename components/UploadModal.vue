@@ -61,45 +61,11 @@ async function createDriveFolderBrowser(token, name, parentId) {
   return data.id
 }
 
-function compressImage(file) {
-  return new Promise((resolve) => {
-    if (!file.type.startsWith('image/') || file.type === 'image/gif') {
-      resolve(file)
-      return
-    }
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const maxDim = 2000
-      let w = img.naturalWidth
-      let h = img.naturalHeight
-      if (w > maxDim || h > maxDim) {
-        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim }
-        else { w = Math.round(w * maxDim / h); h = maxDim }
-      }
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0, w, h)
-      canvas.toBlob((blob) => {
-        if (blob && blob.size < file.size) {
-          resolve(new File([blob], file.name, { type: 'image/jpeg' }))
-        } else {
-          resolve(file)
-        }
-      }, 'image/jpeg', 0.82)
-    }
-    img.onerror = () => resolve(file)
-    img.src = URL.createObjectURL(file)
-  })
-}
-
 async function uploadFileToDriveBrowser(token, folderId, file) {
-  const compressed = await compressImage(file)
-  const metadata = { name: compressed.name, parents: [folderId] }
+  const metadata = { name: file.name, parents: [folderId] }
   const form = new FormData()
   form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
-  form.append('file', compressed)
+  form.append('file', file)
 
   const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
     method: 'POST',
