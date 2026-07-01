@@ -16,6 +16,7 @@ const editPhotos = ref([])
 const editPhotosLoading = ref(false)
 const editUploadFile = ref(null)
 const editPhotoSearch = ref('')
+const isDeleting = ref(false)
 
 const formIsBatch = ref(false)
 const formName = ref('')
@@ -57,24 +58,33 @@ function resetCreateForm() {
 
 async function handleDelete(id) {
   if (!await dialog.confirm('Hapus riwayat proyek ini?')) return
-  await $fetch('/api/albums/' + id, { method: 'DELETE' }); await loadData()
+  isDeleting.value = true
+  try { await $fetch('/api/albums/' + id, { method: 'DELETE' }); await loadData() }
+  finally { isDeleting.value = false }
 }
 
 async function handleDeleteGroup(groupName) {
   if (!await dialog.confirm('PERHATIAN: Hapus folder "' + groupName + '" beserta SELURUH link di dalamnya?')) return
-  await $fetch('/api/albums/delete-group', { method: 'POST', body: { group_name: groupName } }); await loadData()
+  isDeleting.value = true
+  try { await $fetch('/api/albums/delete-group', { method: 'POST', body: { group_name: groupName } }); await loadData() }
+  finally { isDeleting.value = false }
 }
 
 async function handleDeleteAllExpired() {
   if (!await dialog.confirm('Yakin ingin menghapus SEMUA riwayat link yang telah kedaluwarsa?')) return
-  await $fetch('/api/albums/delete-expired', { method: 'POST' }); await loadData()
+  isDeleting.value = true
+  try { await $fetch('/api/albums/delete-expired', { method: 'POST' }); await loadData() }
+  finally { isDeleting.value = false }
 }
 
 async function handleDeleteBulk() {
   if (selectedIds.value.size === 0) return
   if (!await dialog.confirm('Hapus ' + selectedIds.value.size + ' riwayat proyek terpilih secara permanen?')) return
-  await $fetch('/api/albums/delete-bulk', { method: 'POST', body: { ids: Array.from(selectedIds.value) } })
-  selectedIds.value.clear(); await loadData()
+  isDeleting.value = true
+  try {
+    await $fetch('/api/albums/delete-bulk', { method: 'POST', body: { ids: Array.from(selectedIds.value) } })
+    selectedIds.value.clear(); await loadData()
+  } finally { isDeleting.value = false }
 }
 
 function toggleSelect(id) {
@@ -130,6 +140,7 @@ async function handleEdit() {
 
 async function deletePhoto(fileId, fileName) {
   if (!await dialog.confirm('Hapus foto "' + fileName + '" dari Google Drive?')) return
+  isDeleting.value = true
   try {
     const res = await $fetch('/api/albums/' + editingId.value + '/photos', {
       method: 'POST',
@@ -143,7 +154,7 @@ async function deletePhoto(fileId, fileName) {
     }
   } catch {
     dialog.alert('Gagal menghapus foto.')
-  }
+  } finally { isDeleting.value = false }
 }
 
 async function handleEditUpload(e) {
@@ -601,5 +612,14 @@ onMounted(async () => {
 
       <UploadModal v-if="showUploadModal" @close="showUploadModal = false" />
       <UploadProgress />
+  </div>
+
+  <!-- Deleting Overlay -->
+  <div v-if="isDeleting" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[250] flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 text-center animate-in">
+      <div class="w-12 h-12 rounded-full border-4 border-gray-100 border-t-red-500 animate-spin mx-auto mb-4"></div>
+      <p class="font-bold text-gray-900">Menghapus...</p>
+      <p class="text-xs text-gray-400 mt-1">Mohon tunggu sebentar</p>
+    </div>
   </div>
 </template>
