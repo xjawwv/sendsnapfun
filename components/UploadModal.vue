@@ -92,25 +92,14 @@ async function handleUpload() {
     updateProgress(0, 'Membuat folder...')
     const folderId = await createDriveFolderBrowser(token, formName.value, parentId)
 
-    let failed = false
-    let done = 0
-
-    await Promise.all(files.value.map(async (file) => {
-      if (failed || cancelled.value) { failed = true; return }
-      try {
-        await uploadFileToDriveBrowser(token, folderId, file)
-        done++
-        updateProgress(done, file.name)
-      } catch (e) {
-        failed = true
-      }
-    }))
-
-    if (failed) {
-      if (!cancelled.value) finishUpload('Gagal mengupload salah satu file.')
-      else finishUpload()
-      return
+    for (let i = 0; i < files.value.length; i++) {
+      if (cancelled.value) break
+      updateProgress(i, files.value[i].name)
+      await uploadFileToDriveBrowser(token, folderId, files.value[i])
+      updateProgress(i + 1, files.value[i].name)
     }
+
+    if (cancelled.value) { finishUpload(); return }
 
     await $fetch('/api/albums', {
       method: 'POST',
