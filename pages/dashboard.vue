@@ -9,6 +9,8 @@ const showUploadModal = ref(false)
 const showEditModal = ref(false)
 const driveConnected = ref(false)
 const driveChecking = ref(true)
+const driveUsage = ref(0)
+const driveLimit = ref(0)
 const editingId = ref('')
 const editPhotos = ref([])
 const editPhotosLoading = ref(false)
@@ -167,10 +169,22 @@ function countdown(expiresAt) {
   return Math.floor(diff / 86400000) + ' Hr ' + Math.floor((diff % 86400000) / 3600000) + ' Jm'
 }
 
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i]
+}
+
 async function checkDriveStatus() {
   try {
     const res = await $fetch('/api/auth/google/status')
     driveConnected.value = res.connected
+    if (res.connected) {
+      const storage = await $fetch('/api/auth/google/storage')
+      driveUsage.value = storage.usage || 0
+      driveLimit.value = storage.limit || 0
+    }
   } catch {} finally { driveChecking.value = false }
 }
 
@@ -253,14 +267,13 @@ onMounted(async () => {
             </div>
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm md:col-span-2 flex items-center justify-between">
               <div>
-                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive Connection</p>
+                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive Storage</p>
                 <div v-if="driveChecking" class="flex items-center gap-2 text-sm text-gray-400">
                   <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                   Checking...
                 </div>
-                <p v-else-if="driveConnected" class="text-lg md:text-xl font-bold text-emerald-500 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="m9 12 2 2 4-4"/></svg>
-                  Connected
+                <p v-else-if="driveConnected" class="text-sm md:text-base font-bold text-gray-800">
+                  {{ formatBytes(driveUsage) }} / {{ formatBytes(driveLimit) }}
                 </p>
                 <p v-else class="text-lg md:text-xl font-bold text-gray-400 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
