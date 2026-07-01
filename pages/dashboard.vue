@@ -295,7 +295,7 @@ onMounted(async () => {
 
       <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative">
         <div v-if="data" class="flex flex-col gap-8 pb-8">
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4">
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek</p>
               <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ data.activeLinks }}</p>
@@ -311,18 +311,17 @@ onMounted(async () => {
               </p>
               <p class="text-[10px] text-gray-400 mt-0.5">file/menit</p>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Google Drive</p>
-              <p class="text-sm md:text-base font-bold text-gray-800">{{ formatBytes(driveUsage) }}</p>
-              <p class="text-[10px] text-gray-400 mt-0.5">dari {{ formatBytes(driveLimit) }}</p>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-center">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+              <div class="mb-3">
+                <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive</p>
+                <p class="text-sm md:text-base font-bold text-gray-800">{{ formatBytes(driveUsage) }} / {{ formatBytes(driveLimit) }}</p>
+              </div>
               <div class="flex gap-2">
-                <button @click="showUploadModal = true" class="bg-[#059669] text-white px-4 py-2.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 btn-touch">
+                <button @click="showUploadModal = true" class="flex-1 bg-[#059669] text-white py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch hover:bg-emerald-700">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Upload
                 </button>
-                <button @click="showCreateModal = true" class="bg-[#355faa] text-white px-4 py-2.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 btn-touch">
+                <button @click="showCreateModal = true" class="flex-1 bg-[#355faa] text-white py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch hover:bg-[#2d5191]">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Buat Link
                 </button>
