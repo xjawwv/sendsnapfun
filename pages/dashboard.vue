@@ -131,7 +131,7 @@ async function handleEdit() {
 async function deletePhoto(fileId, fileName) {
   if (!await dialog.confirm('Hapus foto "' + fileName + '" dari Google Drive?')) return
   try {
-    const res = await $fetch('/api/albums/' + editingId.value + '/photos/delete', {
+    const res = await $fetch('/api/albums/' + editingId.value + '/photos', {
       method: 'POST',
       body: { file_id: fileId },
     })
