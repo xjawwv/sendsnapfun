@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{ close: [] }>()
+const dialog = useDialog()
 
 const files = ref<File[]>([])
 const formName = ref('')
@@ -38,15 +39,22 @@ function removeFile(index: number) {
 }
 
 async function uploadOneFile(albumId: string, file: File): Promise<boolean> {
-  const body = new FormData()
-  body.append('file', file)
-  const res = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
-  return res.success
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const body = new FormData()
+      body.append('file', file)
+      const res = await $fetch(`/api/upload/${albumId}/file`, { method: 'POST', body })
+      if (res.success) return true
+    } catch {}
+    if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt))
+  }
+  return false
 }
 
 async function handleUpload() {
   if (!formName.value || files.value.length === 0) return
 
+  emit('close')
   startUpload(files.value.length)
 
   try {
@@ -62,7 +70,7 @@ async function handleUpload() {
     })
 
     if (!folderRes.success) {
-      alert(folderRes.message || 'Gagal membuat folder.')
+      dialog.alert(folderRes.message || 'Gagal membuat folder.')
       finishUpload()
       return
     }
@@ -84,8 +92,7 @@ async function handleUpload() {
       return
     }
 
-    alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
-    emit('close')
+    dialog.alert(`Sukses! ${totalFiles.value} foto berhasil diupload dan link galeri siap digunakan.`)
     window.location.reload()
   } catch (err: any) {
     finishUpload(err.message || 'Terjadi kesalahan jaringan.')

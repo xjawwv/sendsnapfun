@@ -1,6 +1,8 @@
 ﻿<script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
+const dialog = useDialog()
+
 const data = ref(null)
 const showCreateModal = ref(false)
 const showUploadModal = ref(false)
@@ -39,10 +41,10 @@ async function handleCreate() {
     if (!formIsBatch.value) body.name = formName.value
     const res = formIsBatch.value ? await $fetch('/api/albums/batch', { method: 'POST', body }) : await $fetch('/api/albums', { method: 'POST', body })
     if (res.success) {
-      if (formIsBatch.value) alert('Sukses! ' + res.count + ' Link berhasil dibuat secara otomatis.')
+      if (formIsBatch.value) dialog.alert('Sukses! ' + res.count + ' Link berhasil dibuat secara otomatis.')
       showCreateModal.value = false; resetCreateForm(); await loadData()
-    } else { alert(res.message) }
-  } catch { alert('Terjadi kesalahan jaringan.') }
+    } else { dialog.alert(res.message) }
+  } catch { dialog.alert('Terjadi kesalahan jaringan.') }
   finally { createLoading.value = false }
 }
 
@@ -52,23 +54,23 @@ function resetCreateForm() {
 }
 
 async function handleDelete(id) {
-  if (!confirm('Hapus riwayat proyek ini?')) return
+  if (!await dialog.confirm('Hapus riwayat proyek ini?')) return
   await $fetch('/api/albums/' + id, { method: 'DELETE' }); await loadData()
 }
 
 async function handleDeleteGroup(groupName) {
-  if (!confirm('PERHATIAN: Hapus folder "' + groupName + '" beserta SELURUH link di dalamnya?')) return
+  if (!await dialog.confirm('PERHATIAN: Hapus folder "' + groupName + '" beserta SELURUH link di dalamnya?')) return
   await $fetch('/api/albums/delete-group', { method: 'POST', body: { group_name: groupName } }); await loadData()
 }
 
 async function handleDeleteAllExpired() {
-  if (!confirm('Yakin ingin menghapus SEMUA riwayat link yang telah kedaluwarsa?')) return
+  if (!await dialog.confirm('Yakin ingin menghapus SEMUA riwayat link yang telah kedaluwarsa?')) return
   await $fetch('/api/albums/delete-expired', { method: 'POST' }); await loadData()
 }
 
 async function handleDeleteBulk() {
   if (selectedIds.value.size === 0) return
-  if (!confirm('Hapus ' + selectedIds.value.size + ' riwayat proyek terpilih secara permanen?')) return
+  if (!await dialog.confirm('Hapus ' + selectedIds.value.size + ' riwayat proyek terpilih secara permanen?')) return
   await $fetch('/api/albums/delete-bulk', { method: 'POST', body: { ids: Array.from(selectedIds.value) } })
   selectedIds.value.clear(); await loadData()
 }
@@ -80,7 +82,7 @@ function toggleSelect(id) {
 
 function copyLink(id) {
   navigator.clipboard.writeText(window.location.origin + '/gallery/' + id)
-  alert('Link Tersalin! Berikan ke pelanggan.')
+  dialog.alert('Link Tersalin! Berikan ke pelanggan.')
 }
 
 async function openEdit(id) {
@@ -120,29 +122,37 @@ async function handleEdit() {
       body: { name: editName.value, paket: editPaket.value, drive_link: editDriveLink.value, group_name: editGroupName.value },
     })
     if (res.success) { showEditModal.value = false; await loadData() }
-    else { alert(res.message) }
-  } catch { alert('Gagal menyimpan.') }
+    else { dialog.alert(res.message) }
+  } catch { dialog.alert('Gagal menyimpan.') }
 }
-
-const editUploading = ref(false)
-const editUploadProgress = ref('')
 
 async function handleEditUpload(e) {
   const files = e.target.files
   if (!files || files.length === 0) return
-  editUploading.value = true
-  editUploadProgress.value = '0 / ' + files.length
+
+  const { startUpload, updateProgress, finishUpload } = useUploadState()
+  startUpload(files.length)
+
   try {
     for (let i = 0; i < files.length; i++) {
-      editUploadProgress.value = (i + 1) + ' / ' + files.length
-      const body = new FormData()
-      body.append('file', files[i])
-      await $fetch('/api/upload/' + editingId.value + '/file', { method: 'POST', body })
+      updateProgress(i + 1, files[i].name)
+      let ok = false
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          const body = new FormData()
+          body.append('file', files[i])
+          const res = await $fetch('/api/upload/' + editingId.value + '/file', { method: 'POST', body })
+          if (res.success) { ok = true; break }
+        } catch {}
+        if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt))
+      }
+      if (!ok) throw new Error('Gagal upload ' + files[i].name)
     }
-    alert('Upload selesai! ' + files.length + ' foto berhasil diupload.')
+    finishUpload()
+    dialog.alert('Upload selesai! ' + files.length + ' foto berhasil diupload.')
     await loadEditPhotos(editingId.value)
-  } catch { alert('Gagal mengupload file.') }
-  finally { editUploading.value = false; e.target.value = '' }
+  } catch (err) { finishUpload(err.message); dialog.alert(err.message) }
+  finally { e.target.value = '' }
 }
 
 async function handleLogout() {
@@ -168,11 +178,11 @@ async function connectDrive() {
   try {
     const res = await $fetch('/api/auth/google/connect')
     if (res.url) window.location.href = res.url
-  } catch { alert('Gagal menghubungkan Google Drive.') }
+  } catch { dialog.alert('Gagal menghubungkan Google Drive.') }
 }
 
 async function disconnectDrive() {
-  if (!confirm('Putuskan koneksi Google Drive?')) return
+  if (!await dialog.confirm('Putuskan koneksi Google Drive?')) return
   await $fetch('/api/auth/google/disconnect', { method: 'POST' })
   driveConnected.value = false
 }
@@ -504,10 +514,10 @@ onMounted(async () => {
           <div class="mt-6 pt-5 border-t border-gray-100">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-bold text-sm text-gray-700">Foto ({{ editPhotos.length }})</h4>
-              <label class="bg-[#355faa] text-white px-4 py-2 rounded-xl text-xs font-bold btn-touch flex items-center gap-1.5 cursor-pointer" :class="editUploading ? 'opacity-50 pointer-events-none' : ''">
+              <label class="bg-[#355faa] text-white px-4 py-2 rounded-xl text-xs font-bold btn-touch flex items-center gap-1.5 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                {{ editUploading ? 'Uploading...' : 'Upload' }}
-                <input type="file" multiple accept="image/*" class="hidden" @change="handleEditUpload" :disabled="editUploading">
+                Upload
+                <input type="file" multiple accept="image/*" class="hidden" @change="handleEditUpload">
               </label>
             </div>
             <div v-if="editPhotos.length > 0" class="relative mb-3">
