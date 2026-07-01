@@ -95,11 +95,15 @@ async function openEdit(id) {
   }
 }
 
+function naturalSort(a, b) {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+}
+
 async function loadEditPhotos(id) {
   editPhotosLoading.value = true
   try {
     const res = await $fetch('/api/albums/' + id + '/photos')
-    if (res.success) editPhotos.value = res.photos.sort((a, b) => a.name.localeCompare(b.name))
+    if (res.success) editPhotos.value = res.photos.sort((a, b) => naturalSort(a.name, b.name))
   } catch {} finally { editPhotosLoading.value = false }
 }
 
