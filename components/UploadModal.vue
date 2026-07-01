@@ -6,11 +6,9 @@ const formName = ref('')
 const formPaket = ref('Self Photo')
 const formGroupName = ref('')
 const formHours = ref('168')
-const uploading = ref(false)
-const currentFile = ref(0)
-const totalFiles = ref(0)
-const uploadError = ref('')
 const dragOver = ref(false)
+
+const { uploading, currentFile, totalFiles, uploadError, startUpload, updateProgress, finishUpload } = useUploadState()
 
 function onFileInput(e: Event) {
   const input = e.target as HTMLInputElement
@@ -49,10 +47,7 @@ async function uploadOneFile(albumId: string, file: File): Promise<boolean> {
 async function handleUpload() {
   if (!formName.value || files.value.length === 0) return
 
-  uploading.value = true
-  currentFile.value = 0
-  totalFiles.value = files.value.length
-  uploadError.value = ''
+  startUpload(files.value.length)
 
   try {
     const folderRes = await $fetch('/api/upload', {
@@ -68,7 +63,7 @@ async function handleUpload() {
 
     if (!folderRes.success) {
       alert(folderRes.message || 'Gagal membuat folder.')
-      uploading.value = false
+      finishUpload()
       return
     }
 
@@ -79,12 +74,11 @@ async function handleUpload() {
       if (failed) return
       const ok = await uploadOneFile(albumId, file)
       if (!ok) { failed = true; return }
-      currentFile.value++
+      updateProgress(currentFile.value + 1, file.name)
     }))
 
     if (failed) {
-      uploadError.value = 'Gagal mengupload salah satu file.'
-      uploading.value = false
+      finishUpload('Gagal mengupload salah satu file.')
       return
     }
 
@@ -92,9 +86,7 @@ async function handleUpload() {
     emit('close')
     window.location.reload()
   } catch (err: any) {
-    uploadError.value = err.message || 'Terjadi kesalahan jaringan.'
-  } finally {
-    uploading.value = false
+    finishUpload(err.message || 'Terjadi kesalahan jaringan.')
   }
 }
 
@@ -120,23 +112,8 @@ const totalSize = computed(() => {
         </button>
       </div>
 
-      <!-- Progress bar -->
-      <div v-if="uploading" class="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-2xl">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <svg class="animate-spin text-[#355faa]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            <span class="font-bold text-sm text-[#355faa]">Mengupload ke Google Drive...</span>
-          </div>
-          <span class="font-black text-lg text-[#355faa]">{{ currentFile }} / {{ totalFiles }}</span>
-        </div>
-        <div class="w-full bg-white rounded-full h-3 overflow-hidden border border-blue-200">
-          <div class="bg-[#355faa] h-full rounded-full transition-all duration-300" :style="{ width: progressPercent + '%' }"></div>
-        </div>
-        <p class="text-xs text-blue-600 mt-2 font-medium">File {{ currentFile }} dari {{ totalFiles }} — {{ files[currentFile - 1]?.name || '' }}</p>
-      </div>
-
       <!-- Upload form -->
-      <div v-if="!uploading">
+      <div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Paket</label>

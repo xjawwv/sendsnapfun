@@ -8,6 +8,9 @@ const showEditModal = ref(false)
 const driveConnected = ref(false)
 const driveChecking = ref(true)
 const editingId = ref('')
+const editPhotos = ref([])
+const editPhotosLoading = ref(false)
+const editUploadFile = ref(null)
 
 const formIsBatch = ref(false)
 const formName = ref('')
@@ -81,12 +84,22 @@ function copyLink(id) {
 
 async function openEdit(id) {
   editingId.value = id
+  editPhotos.value = []
   const res = await $fetch('/api/albums/' + id)
   if (res.success) {
     editName.value = res.album.name; editPaket.value = res.album.paket
     editDriveLink.value = res.album.drive_link; editGroupName.value = res.album.group_name || ''
     showEditModal.value = true
+    await loadEditPhotos(id)
   }
+}
+
+async function loadEditPhotos(id) {
+  editPhotosLoading.value = true
+  try {
+    const res = await $fetch('/api/albums/' + id + '/photos')
+    if (res.success) editPhotos.value = res.photos
+  } catch {} finally { editPhotosLoading.value = false }
 }
 
 async function handleEdit() {
@@ -98,6 +111,27 @@ async function handleEdit() {
     if (res.success) { showEditModal.value = false; await loadData() }
     else { alert(res.message) }
   } catch { alert('Gagal menyimpan.') }
+}
+
+const editUploading = ref(false)
+const editUploadProgress = ref('')
+
+async function handleEditUpload(e) {
+  const files = e.target.files
+  if (!files || files.length === 0) return
+  editUploading.value = true
+  editUploadProgress.value = '0 / ' + files.length
+  try {
+    for (let i = 0; i < files.length; i++) {
+      editUploadProgress.value = (i + 1) + ' / ' + files.length
+      const body = new FormData()
+      body.append('file', files[i])
+      await $fetch('/api/upload/' + editingId.value + '/file', { method: 'POST', body })
+    }
+    alert('Upload selesai! ' + files.length + ' foto berhasil diupload.')
+    await loadEditPhotos(editingId.value)
+  } catch { alert('Gagal mengupload file.') }
+  finally { editUploading.value = false; e.target.value = '' }
 }
 
 async function handleLogout() {
@@ -425,10 +459,10 @@ onMounted(async () => {
       </div>
 
       <div id="edit-panel" v-if="showEditModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4" @click.self="showEditModal = false">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-xl">Edit Data</h3>
-            <button @click="showEditModal = false" class="text-gray-400">
+            <button @click="showEditModal = false" class="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -453,8 +487,42 @@ onMounted(async () => {
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Pindah ke Folder Dashboard</label>
               <input type="text" v-model="editGroupName" class="w-full bg-gray-50 p-3 rounded-xl border outline-none" placeholder="Kosongkan jika tak ingin dikelompokkan...">
             </div>
-            <button type="submit" class="w-full bg-[#355faa] text-white py-3 rounded-xl font-bold btn-touch text-sm mt-4">Simpan</button>
+            <button type="submit" class="w-full bg-[#355faa] text-white py-3 rounded-xl font-bold btn-touch text-sm">Simpan</button>
           </form>
+
+          <div class="mt-6 pt-5 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-bold text-sm text-gray-700">Foto ({{ editPhotos.length }})</h4>
+              <label class="bg-[#355faa] text-white px-4 py-2 rounded-xl text-xs font-bold btn-touch flex items-center gap-1.5 cursor-pointer" :class="editUploading ? 'opacity-50 pointer-events-none' : ''">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                {{ editUploading ? 'Uploading...' : 'Upload' }}
+                <input type="file" multiple accept="image/*" class="hidden" @change="handleEditUpload" :disabled="editUploading">
+              </label>
+            </div>
+            <div v-if="editPhotosLoading" class="text-center py-6 text-gray-400">
+              <svg class="animate-spin mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              <p class="text-xs">Memuat daftar foto...</p>
+            </div>
+            <div v-else-if="editPhotos.length === 0" class="text-center py-6 text-gray-400">
+              <p class="text-xs">Belum ada foto di folder ini.</p>
+            </div>
+            <div v-else class="max-h-48 overflow-y-auto rounded-xl border border-gray-100">
+              <table class="w-full text-xs">
+                <thead class="sticky top-0 bg-gray-50">
+                  <tr>
+                    <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase">#</th>
+                    <th class="text-left py-2 px-3 font-bold text-gray-500 text-[10px] uppercase">Nama File</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                  <tr v-for="photo in editPhotos" :key="photo.id" class="hover:bg-gray-50">
+                    <td class="py-2 px-3 text-gray-400 font-mono">{{ photo.number }}</td>
+                    <td class="py-2 px-3 text-gray-700 truncate max-w-[250px]">{{ photo.name }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -464,5 +532,6 @@ onMounted(async () => {
     </div>
 
       <UploadModal v-if="showUploadModal" @close="showUploadModal = false" />
+      <UploadProgress />
   </div>
 </template>
