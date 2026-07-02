@@ -1,23 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
-
 export default defineEventHandler(async (event) => {
   const fileId = getRouterParam(event, 'fileId')
   if (!fileId) {
     throw createError({ statusCode: 400, statusMessage: 'File ID required' })
-  }
-
-  const cacheDir = join(process.cwd(), '.data', 'thumbs')
-  if (!existsSync(cacheDir)) {
-    mkdirSync(cacheDir, { recursive: true })
-  }
-
-  const cachePath = join(cacheDir, fileId)
-  if (existsSync(cachePath)) {
-    const cached = readFileSync(cachePath)
-    setResponseHeader(event, 'Content-Type', 'image/jpeg')
-    setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
-    return cached
   }
 
   const config = useRuntimeConfig()
@@ -30,10 +14,9 @@ export default defineEventHandler(async (event) => {
     }
 
     const buffer = Buffer.from(await response.arrayBuffer())
+    const contentType = response.headers.get('content-type') || 'image/jpeg'
 
-    writeFileSync(cachePath, buffer)
-
-    setResponseHeader(event, 'Content-Type', 'image/jpeg')
+    setResponseHeader(event, 'Content-Type', contentType)
     setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
     setResponseHeader(event, 'Content-Length', buffer.length.toString())
 
