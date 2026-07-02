@@ -219,8 +219,8 @@ onUnmounted(() => {
         <p class="text-[10px] font-bold text-[#355faa] uppercase tracking-widest mb-0.5">{{ album.paket }}</p>
         <h1 class="text-gray-900 font-bold text-lg truncate max-w-[200px]">{{ album.name }}</h1>
       </div>
-      <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-[#355faa]">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div class="w-10 h-10 bg-[#1759CA] rounded-full flex items-center justify-center text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 154 105" fill="none"><path d="M7.24149 3.24701C12.464 3.24701 14.6679 0.168335 21.9046 0.168335C31.2186 0.168335 35.7504 5.17051 35.7504 14.5973V36.7229H21.2771V17.1628C21.2771 14.2131 19.8298 13.0579 17.879 13.0579C15.9281 13.0579 14.4808 14.2131 14.4808 17.1628V36.7229H0.00749207V1.00113C2.83888 2.66942 4.97955 3.24432 7.24413 3.24432L7.24149 3.24701Z" fill="white"/><path d="M6.22528 12.0976C9.40661 12.0976 11.9856 9.46955 11.9856 6.22769C11.9856 2.98583 9.40661 0.357788 6.22528 0.357788C3.04395 0.357788 0.464966 2.98583 0.464966 6.22769C0.464966 9.46955 3.04395 12.0976 6.22528 12.0976Z" fill="#FEDD03"/></svg>
       </div>
     </header>
 
