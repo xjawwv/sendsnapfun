@@ -459,60 +459,6 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div id="create-panel" v-if="showCreateModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4" @click.self="showCreateModal = false">
-        <div class="bg-white rounded-[2rem] w-full max-w-3xl shadow-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="font-bold text-xl">Hubungkan Folder G-Drive Baru</h3>
-            <button type="button" @click="showCreateModal = false" class="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" v-model="formIsBatch" class="w-5 h-5 text-[#355faa] bg-white border-gray-300 rounded focus:ring-[#355faa]">
-              <span class="text-sm font-bold text-[#355faa]">Tarik Otomatis dari Folder Utama (Batch Processing)</span>
-            </label>
-            <p class="text-xs text-blue-600 mt-2 ml-8">Centang jika G-Drive berisi banyak sub-folder. Sistem akan otomatis mendeteksi dan membuatkan folder & link klien secara instan.</p>
-          </div>
-          <form @submit.prevent="handleCreate" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="md:col-span-1">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Paket</label>
-                <select v-model="formPaket" class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 outline-none">
-                  <option value="Self Photo">Self Photo</option>
-                  <option value="Photobox">Photobox</option>
-                  <option value="Pas Photo">Pas Photo</option>
-                </select>
-              </div>
-              <div class="md:col-span-2" v-if="!formIsBatch">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Nama Klien</label>
-                <input type="text" v-model="formName" required class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 outline-none" placeholder="Cth: Sesi Budi & Siska">
-              </div>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Link Google Drive (Folder Utama / Folder Klien)</label>
-              <input type="url" v-model="formDriveLink" required class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 outline-none" placeholder="Paste URL Folder G-Drive disini...">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Nama Folder di Dashboard (Opsional)</label>
-              <input type="text" v-model="formGroupName" class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 outline-none" placeholder="Kosongkan jika tidak ingin dikelompokkan...">
-              <p class="text-[10px] text-gray-400 mt-1" v-if="formIsBatch">Jika mode Tarik Otomatis aktif dan dikosongkan, nama folder Dashboard akan otomatis mengikuti nama folder Google Drive Anda.</p>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Durasi Akses Galeri</label>
-              <select v-model="formHours" class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 outline-none">
-                <option value="168">1 Minggu</option>
-                <option value="336">2 Minggu</option>
-                <option value="720">1 Bulan</option>
-              </select>
-            </div>
-            <button type="submit" :disabled="createLoading" class="w-full bg-[#355faa] text-white py-4 rounded-xl font-bold uppercase tracking-widest flex justify-center items-center gap-2 btn-touch shadow-lg shadow-blue-900/20 disabled:opacity-50">
-              {{ createLoading ? 'Memproses...' : 'Terbitkan Galeri' }}
-            </button>
-          </form>
-        </div>
-      </div>
-
       <div id="edit-panel" v-if="showEditModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4" @click.self="showEditModal = false">
         <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-4">
@@ -597,9 +543,6 @@ onMounted(async () => {
         </div>
       </div>
 
-      <button @click="showCreateModal = true" class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#fbdc00] text-gray-900 rounded-full shadow-glow flex items-center justify-center z-40">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
     </div>
 
       <UploadModal v-if="showUploadModal" @close="showUploadModal = false" />
