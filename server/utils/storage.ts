@@ -13,15 +13,43 @@ export interface Database {
   [id: string]: Album
 }
 
+const ALBUMS_TABLE = 'albums'
+
+async function ensureTable() {
+  await dbRun(`CREATE TABLE IF NOT EXISTS ${ALBUMS_TABLE} (
+    id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    paket VARCHAR(50) DEFAULT 'Self Photo',
+    drive_link TEXT,
+    folder_id VARCHAR(100),
+    group_name VARCHAR(255) DEFAULT '',
+    expires_at BIGINT DEFAULT 0,
+    created_at BIGINT DEFAULT 0
+  )`)
+}
+
 export async function getDb(): Promise<Database> {
-  const storage = useStorage('db')
-  const data = await storage.getItem<Database>('database.json')
-  return data || {}
+  await ensureTable()
+  const rows = await dbQuery(`SELECT * FROM ${ALBUMS_TABLE}`) as Album[]
+  const db: Database = {}
+  for (const row of rows) {
+    db[row.id] = row
+  }
+  return db
 }
 
 export async function saveDb(db: Database): Promise<void> {
-  const storage = useStorage('db')
-  await storage.setItem('database.json', db)
+  await ensureTable()
+  await dbRun(`DELETE FROM ${ALBUMS_TABLE}`)
+  const entries = Object.entries(db)
+  if (entries.length > 0) {
+    const placeholders = entries.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(',')
+    const values = entries.flatMap(([id, album]) => [
+      album.id, album.name, album.paket, album.drive_link,
+      album.folder_id, album.group_name, album.expires_at, album.created_at
+    ])
+    await dbRun(`INSERT INTO ${ALBUMS_TABLE} (id, name, paket, drive_link, folder_id, group_name, expires_at, created_at) VALUES ${placeholders}`, values)
+  }
 }
 
 export function getDriveFolderId(url: string): string | null {

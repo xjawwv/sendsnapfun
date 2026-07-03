@@ -29,6 +29,11 @@ export default defineNuxtConfig({
     gdriveOauthClientSecret: '',
     gdriveOauthRedirectUri: 'http://localhost:3000/api/auth/google/callback',
     gdriveUploadFolderId: '1YgBqzxxuq71NmHLi7MjnnLT4XcnRCWfb',
+    mysqlHost: 'localhost',
+    mysqlPort: '3306',
+    mysqlUser: 'root',
+    mysqlPassword: '',
+    mysqlDatabase: 'sendsnapfun',
   },
   app: {
     head: {
