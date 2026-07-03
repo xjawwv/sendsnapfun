@@ -24,7 +24,28 @@ export function getAuthUrl(oauth2Client: any): string {
 }
 
 export async function getTokensFromCode(oauth2Client: any, code: string) {
-  const { tokens } = await oauth2Client.getToken(code)
+  const config = useRuntimeConfig()
+  const url = 'https://oauth2.googleapis.com/token'
+  const body = new URLSearchParams({
+    code,
+    client_id: config.gdriveOauthClientId,
+    client_secret: config.gdriveOauthClientSecret,
+    redirect_uri: config.gdriveOauthRedirectUri,
+    grant_type: 'authorization_code',
+  })
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  })
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '')
+    throw new Error(`OAuth token exchange failed (${response.status}): ${errText}`)
+  }
+
+  const tokens = await response.json()
   return tokens
 }
 
