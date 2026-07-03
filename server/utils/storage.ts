@@ -14,6 +14,7 @@ export interface Database {
 }
 
 const ALBUMS_TABLE = 'albums'
+const SETTINGS_TABLE = 'settings'
 
 async function ensureTable() {
   await dbRun(`CREATE TABLE IF NOT EXISTS ${ALBUMS_TABLE} (
@@ -25,6 +26,10 @@ async function ensureTable() {
     group_name VARCHAR(255) DEFAULT '',
     expires_at BIGINT DEFAULT 0,
     created_at BIGINT DEFAULT 0
+  )`)
+  await dbRun(`CREATE TABLE IF NOT EXISTS ${SETTINGS_TABLE} (
+    \`key\` VARCHAR(255) PRIMARY KEY,
+    value TEXT
   )`)
 }
 
@@ -40,8 +45,8 @@ export async function getDb(): Promise<Database> {
 
 export async function saveDb(db: Database): Promise<void> {
   await ensureTable()
+  const entries = Object.entries(db).filter(([id]) => !id.startsWith('_'))
   await dbRun(`DELETE FROM ${ALBUMS_TABLE}`)
-  const entries = Object.entries(db)
   if (entries.length > 0) {
     const placeholders = entries.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(',')
     const values = entries.flatMap(([id, album]) => [
@@ -50,6 +55,22 @@ export async function saveDb(db: Database): Promise<void> {
     ])
     await dbRun(`INSERT INTO ${ALBUMS_TABLE} (id, name, paket, drive_link, folder_id, group_name, expires_at, created_at) VALUES ${placeholders}`, values)
   }
+}
+
+export async function getSetting(key: string): Promise<any> {
+  const row = await dbGet(`SELECT value FROM ${SETTINGS_TABLE} WHERE \`key\` = ?`, [key])
+  if (!row?.value) return null
+  try { return JSON.parse(row.value) } catch { return row.value }
+}
+
+export async function saveSetting(key: string, value: any): Promise<void> {
+  await ensureTable()
+  if (value === null) {
+    await dbRun(`DELETE FROM ${SETTINGS_TABLE} WHERE \`key\` = ?`, [key])
+    return
+  }
+  const str = typeof value === 'string' ? value : JSON.stringify(value)
+  await dbRun(`INSERT INTO ${SETTINGS_TABLE} (\`key\`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?`, [key, str, str])
 }
 
 export function getDriveFolderId(url: string): string | null {

@@ -33,15 +33,13 @@ export default defineEventHandler(async (event) => {
 
     let uploadFolderId = ''
     try {
-      const db = await getDb()
-      const existing = db['_google_upload_folder']
+      const existing = await getSetting('google_upload_folder')
       if (existing?.folder_id) {
         uploadFolderId = existing.folder_id
       } else {
         uploadFolderId = await createDriveFolder('SnapLink Albums', 'root')
         await makeFolderPublic(uploadFolderId).catch(() => {})
-        db['_google_upload_folder'] = { folder_id: uploadFolderId }
-        await saveDb(db)
+        await saveSetting('google_upload_folder', { folder_id: uploadFolderId })
       }
     } catch (err) {
       console.error('Failed to create parent folder:', err.message)

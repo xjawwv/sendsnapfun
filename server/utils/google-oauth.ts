@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file']
-const TOKENS_KEY = '_google_oauth_tokens'
+const TOKENS_KEY = 'google_oauth_tokens'
 
 export function getOAuth2Client() {
   const config = useRuntimeConfig()
@@ -29,7 +29,6 @@ export async function getTokensFromCode(oauth2Client: any, code: string) {
 }
 
 export async function saveTokens(tokens: any) {
-  const db = await getDb()
   const tokenData = {
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token,
@@ -37,19 +36,15 @@ export async function saveTokens(tokens: any) {
     scope: tokens.scope,
     token_type: tokens.token_type,
   }
-  db[TOKENS_KEY] = tokenData as any
-  await saveDb(db)
+  await saveSetting(TOKENS_KEY, tokenData)
 }
 
 export async function getStoredTokens(): Promise<any | null> {
-  const db = await getDb()
-  return db[TOKENS_KEY] || null
+  return await getSetting(TOKENS_KEY) || null
 }
 
 export async function clearTokens() {
-  const db = await getDb()
-  delete db[TOKENS_KEY]
-  await saveDb(db)
+  await saveSetting(TOKENS_KEY, null)
 }
 
 export async function getAuthenticatedDrive(): Promise<any> {
