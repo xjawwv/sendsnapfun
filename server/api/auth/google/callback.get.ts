@@ -31,6 +31,17 @@ export default defineEventHandler(async (event) => {
     const tokens = await getTokensFromCode(oauth2Client, code)
     await saveTokens(tokens)
 
+    let uploadFolderId = ''
+    try {
+      uploadFolderId = await createDriveFolder('SnapLink Albums', 'root')
+      await makeFolderPublic(uploadFolderId).catch(() => {})
+      const db = await getDb()
+      db['_google_upload_folder'] = { folder_id: uploadFolderId }
+      await saveDb(db)
+    } catch (err) {
+      console.error('Failed to create parent folder:', err.message)
+    }
+
     return `
       <html><body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;">
         <div style="text-align:center;">

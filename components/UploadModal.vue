@@ -87,7 +87,12 @@ async function handleUpload() {
 
   try {
     const token = await getAccessToken()
-    const parentId = '1YgBqzxxuq71NmHLi7MjnnLT4XcnRCWfb'
+    const folderRes = await $fetch('/api/auth/google/folder')
+    if (!folderRes.connected || !folderRes.folder_id) {
+      finishUpload('Google Drive belum terhubung. Silakan connect Google Drive di sidebar.')
+      return
+    }
+    const parentId = folderRes.folder_id
 
     updateProgress(0, 'Membuat folder...')
     const folderId = await createDriveFolderBrowser(token, formName.value, parentId)
