@@ -35,18 +35,27 @@ export async function fetchDriveFolderName(folderId: string, apiKey: string): Pr
 
 export async function fetchDriveImages(folderId: string, apiKey: string): Promise<DriveFile[]> {
   const query = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/'`)
-  const url = `https://www.googleapis.com/drive/v3/files?q=${query}&key=${apiKey}&fields=files(id,name,thumbnailLink)&pageSize=100`
+  let allFiles: DriveFile[] = []
+  let pageToken: string | undefined = undefined
 
-  const response = await fetch(url)
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.error?.message || 'Gagal mengambil foto dari Google Drive.')
-  }
+  do {
+    const url = `https://www.googleapis.com/drive/v3/files?q=${query}&key=${apiKey}&fields=files(id,name,thumbnailLink),nextPageToken&pageSize=100${pageToken ? '&pageToken=' + pageToken : ''}`
 
-  const data = await response.json()
-  if (!data.files || data.files.length === 0) {
+    const response = await fetch(url)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error?.message || 'Gagal mengambil foto dari Google Drive.')
+    }
+
+    const data = await response.json()
+    if (!data.files) break
+    allFiles = allFiles.concat(data.files)
+    pageToken = data.nextPageToken
+  } while (pageToken)
+
+  if (allFiles.length === 0) {
     throw new Error("Folder kosong atau tidak disetting 'Siapa saja yang memiliki link'.")
   }
 
-  return data.files
+  return allFiles
 }
