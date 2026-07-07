@@ -1,20 +1,18 @@
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
 
-  const tokens = await getStoredTokens()
+  let tokens = await getStoredTokens()
   if (!tokens?.access_token) {
     throw createError({ statusCode: 401, statusMessage: 'Google Drive not connected.' })
   }
 
-  const oauth2Client = getOAuth2Client()
-  oauth2Client.setCredentials(tokens)
-
   if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
-    const { credentials } = await oauth2Client.refreshAccessToken()
-    await saveTokens(credentials)
-    oauth2Client.setCredentials(credentials)
+    try {
+      tokens = await refreshAccessToken(tokens)
+    } catch (err: any) {
+      throw createError({ statusCode: 500, statusMessage: 'Token refresh gagal. Silakan disconnect dan connect ulang Google Drive.' })
+    }
   }
 
-  const accessToken = await oauth2Client.getAccessToken()
-  return { token: accessToken.token }
+  return { token: tokens.access_token }
 })

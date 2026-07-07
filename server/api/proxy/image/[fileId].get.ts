@@ -4,26 +4,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'File ID required' })
   }
 
-  const tokens = await getStoredTokens()
+  let tokens = await getStoredTokens()
   if (!tokens?.access_token) {
     throw createError({ statusCode: 500, statusMessage: 'Google Drive not connected.' })
   }
 
-  const oauth2Client = getOAuth2Client()
-  oauth2Client.setCredentials(tokens)
-
   if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
-    const { credentials } = await oauth2Client.refreshAccessToken()
-    await saveTokens(credentials)
-    oauth2Client.setCredentials(credentials)
+    tokens = await refreshAccessToken(tokens)
   }
 
-  const accessToken = await oauth2Client.getAccessToken()
   const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
 
   try {
     const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken.token}` },
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
     })
 
     if (!response.ok) {

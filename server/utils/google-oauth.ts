@@ -64,25 +64,53 @@ export async function getStoredTokens(): Promise<any | null> {
   return await getSetting(TOKENS_KEY) || null
 }
 
+export async function refreshAccessToken(tokens: any) {
+  const config = useRuntimeConfig()
+  const url = 'https://oauth2.googleapis.com/token'
+  const body = new URLSearchParams({
+    client_id: config.gdriveOauthClientId,
+    client_secret: config.gdriveOauthClientSecret,
+    refresh_token: tokens.refresh_token,
+    grant_type: 'refresh_token',
+  })
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  })
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '')
+    throw new Error(`Token refresh failed (${response.status}): ${errText}`)
+  }
+
+  const newTokens = await response.json()
+  const updated = {
+    ...tokens,
+    access_token: newTokens.access_token,
+    expiry_date: Date.now() + (newTokens.expires_in || 3600) * 1000,
+  }
+  await saveTokens(updated)
+  return updated
+}
+
 export async function clearTokens() {
   await saveSetting(TOKENS_KEY, null)
 }
 
 export async function getAuthenticatedDrive(): Promise<any> {
   const oauth2Client = getOAuth2Client()
-  const tokens = await getStoredTokens()
+  let tokens = await getStoredTokens()
 
   if (!tokens) {
     throw createError({ statusCode: 401, statusMessage: 'Google Drive not connected. Please connect your Google account first.' })
   }
 
-  oauth2Client.setCredentials(tokens)
-
   if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
-    const { credentials } = await oauth2Client.refreshAccessToken()
-    await saveTokens(credentials)
-    oauth2Client.setCredentials(credentials)
+    tokens = await refreshAccessToken(tokens)
   }
 
+  oauth2Client.setCredentials(tokens)
   return google.drive({ version: 'v3', auth: oauth2Client })
 }
