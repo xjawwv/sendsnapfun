@@ -1,6 +1,6 @@
 import { google } from 'googleapis'
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.file']
+const SCOPES = ['https://www.googleapis.com/auth/drive']
 const TOKENS_KEY = 'google_oauth_tokens'
 
 export function getOAuth2Client() {

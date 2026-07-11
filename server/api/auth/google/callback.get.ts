@@ -31,15 +31,22 @@ export default defineEventHandler(async (event) => {
     const tokens = await getTokensFromCode(oauth2Client, code)
     await saveTokens(tokens)
 
+    // Gunakan gdriveUploadFolderId sebagai parent folder (dari .env)
     let uploadFolderId = ''
     try {
       const existing = await getSetting('google_upload_folder')
       if (existing?.folder_id) {
         uploadFolderId = existing.folder_id
       } else {
-        uploadFolderId = await createDriveFolder('SnapLink Albums', 'root')
+        const config = useRuntimeConfig()
+        if (config.gdriveUploadFolderId) {
+          uploadFolderId = config.gdriveUploadFolderId
+          await saveSetting('google_upload_folder', { folder_id: uploadFolderId })
+        } else {
+          uploadFolderId = await createDriveFolder('SnapLink Albums', 'root')
+          await saveSetting('google_upload_folder', { folder_id: uploadFolderId })
+        }
         await makeFolderPublic(uploadFolderId).catch(() => {})
-        await saveSetting('google_upload_folder', { folder_id: uploadFolderId })
       }
     } catch (err) {
       console.error('Failed to create parent folder:', err.message)
