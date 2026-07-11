@@ -45,8 +45,20 @@ export async function getDb(): Promise<Database> {
 
 export async function saveDb(db: Database): Promise<void> {
   await ensureTable()
-  const entries = Object.entries(db).filter(([id]) => !id.startsWith('_'))
-  for (const [, album] of entries) {
+
+  // Hapus record yang ada di DB tapi tidak ada di object (deleted)
+  const existingRows = await dbQuery(`SELECT id FROM ${ALBUMS_TABLE}`) as any[]
+  const existingIds = new Set(existingRows.map((r: any) => r.id))
+  const currentIds = new Set(Object.keys(db).filter(id => !id.startsWith('_')))
+
+  for (const id of existingIds) {
+    if (!currentIds.has(id)) {
+      await dbRun(`DELETE FROM ${ALBUMS_TABLE} WHERE id = ?`, [id])
+    }
+  }
+
+  // Upsert semua record yang ada di object
+  for (const [, album] of Object.entries(db).filter(([id]) => !id.startsWith('_'))) {
     await dbRun(
       `INSERT INTO ${ALBUMS_TABLE} (id, name, paket, drive_link, folder_id, group_name, expires_at, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
