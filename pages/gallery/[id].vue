@@ -238,13 +238,13 @@ onUnmounted(() => {
     </header>
 
     <main class="flex-1 overflow-y-auto pt-20 pb-32 px-4 md:px-8 mt-4 bg-[#f9fafb]">
-      <div class="mb-8 mt-2 bg-[#355faa] text-white rounded-2xl p-5 flex items-center gap-4">
-        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+      <div class="mb-8 mt-2 bg-[#355faa] text-white rounded-2xl p-5 flex items-center gap-4 animate-pop">
+        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center animate-float">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbdc00" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
         <div>
           <p class="text-[10px] font-bold uppercase tracking-widest text-white/80 mb-1">Akses Galeri Berakhir Dalam</p>
-          <p class="text-lg md:text-2xl font-black" id="timer">Menghitung...</p>
+          <p class="text-lg md:text-2xl font-black animate-pulse" id="timer">Menghitung...</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ onUnmounted(() => {
         <p class="text-sm text-center px-4">{{ errorMsg }}</p>
       </div>
       <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100">
+        <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100 animate-card-enter card-lift">
           <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous" decoding="async">
 
           <!-- Normal overlay (download) -->
@@ -286,7 +286,7 @@ onUnmounted(() => {
           </label>
         </div>
       </div>
-      <div class="mt-10 text-center px-6 pb-12"><p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">Snap Fun Studio</p></div>
+      <div class="mt-10 text-center px-6 pb-12"><p class="text-gray-400 text-xs font-bold uppercase tracking-[0.3em] animate-pulse">Snap Fun Studio</p></div>
     </main>
 
     <!-- Bottom Actions -->

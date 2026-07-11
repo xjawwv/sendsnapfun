@@ -24,6 +24,13 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50">
-    <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#355faa]"></div>
+    <div class="flex flex-col items-center gap-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#355faa]"></div>
+      <div class="flex gap-1">
+        <span class="w-2 h-2 bg-[#355faa] rounded-full animate-float" style="animation-delay:0s"></span>
+        <span class="w-2 h-2 bg-[#fbdc00] rounded-full animate-float" style="animation-delay:0.2s"></span>
+        <span class="w-2 h-2 bg-[#355faa] rounded-full animate-float" style="animation-delay:0.4s"></span>
+      </div>
+    </div>
   </div>
 </template>

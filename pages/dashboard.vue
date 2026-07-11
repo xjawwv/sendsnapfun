@@ -312,18 +312,18 @@ onMounted(async () => {
       <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative">
         <div v-if="data" class="flex flex-col gap-8 pb-8">
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm animate-slide-left card-lift">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek</p>
               <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ data.activeLinks }}</p>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm animate-pop card-lift">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Upload Speed</p>
               <p class="text-2xl md:text-3xl font-bold" :class="avgUploadPerMin > 0 ? 'text-emerald-500' : 'text-gray-400'">
                 {{ avgUploadPerMin > 0 ? avgUploadPerMin : '-' }}
               </p>
               <p class="text-[10px] text-gray-400 mt-0.5">file/menit</p>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm animate-slide-right card-lift flex flex-col justify-between">
               <div class="mb-3">
                 <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Google Drive</p>
                 <p class="text-sm md:text-base font-bold text-gray-800">{{ formatBytes(driveUsage) }} / {{ formatBytes(driveLimit) }}</p>
@@ -365,7 +365,7 @@ onMounted(async () => {
                 </div>
                 <div class="hidden border-t border-gray-100 p-5 bg-gray-50/50">
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="album in albums" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors">
+                    <div v-for="album in albums" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors animate-card-enter card-lift">
                       <div class="flex justify-between items-start">
                         <div>
                           <p class="text-[10px] font-black text-[#355faa] uppercase mb-1">{{ album.paket }}</p>
@@ -407,7 +407,7 @@ onMounted(async () => {
               <p class="text-gray-400 text-sm font-bold">Tidak ada link aktif di luar folder.</p>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="album in data.looseProjects" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors">
+              <div v-for="album in data.looseProjects" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors animate-card-enter card-lift">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="text-[10px] font-black text-[#355faa] uppercase mb-1">{{ album.paket }}</p>

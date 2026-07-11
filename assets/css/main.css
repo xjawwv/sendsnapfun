@@ -28,6 +28,7 @@ body {
   border-radius: 10px;
 }
 
+/* ── Animasi Dasar ── */
 @keyframes slide-in-from-bottom {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -35,3 +36,132 @@ body {
 .animate-in {
   animation: slide-in-from-bottom 0.3s ease-out;
 }
+
+/* ── Animasi Fun Baru ── */
+
+/* 1. Floating / melayang (bounce lembut) */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 2. Pulse lembut (glow biru) */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(53, 95, 170, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(53, 95, 170, 0); }
+}
+.animate-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 3. Wobble (goyang ramah) — pas buat tombol aksi */
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-4deg); }
+  40% { transform: rotate(4deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.animate-wobble:hover {
+  animation: wobble 0.6s ease-in-out;
+}
+
+/* 4. Slide-in kiri */
+@keyframes slide-in-left {
+  from { transform: translateX(-24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-left {
+  animation: slide-in-left 0.4s ease-out;
+}
+
+/* 5. Slide-in kanan */
+@keyframes slide-in-right {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-right {
+  animation: slide-in-right 0.4s ease-out;
+}
+
+/* 6. Scale in (pop) */
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop {
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 7. Stagger children — dipasang via style="--i: N" tiap child */
+@keyframes fade-in-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-stagger {
+  animation: fade-in-up 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* 8. Entrance bertahap untuk kartu di grid */
+.animate-card-enter {
+  animation: fade-in-up 0.4s ease-out both;
+}
+.animate-card-enter:nth-child(1) { animation-delay: 0ms; }
+.animate-card-enter:nth-child(2) { animation-delay: 50ms; }
+.animate-card-enter:nth-child(3) { animation-delay: 100ms; }
+.animate-card-enter:nth-child(4) { animation-delay: 150ms; }
+.animate-card-enter:nth-child(5) { animation-delay: 200ms; }
+.animate-card-enter:nth-child(6) { animation-delay: 250ms; }
+.animate-card-enter:nth-child(7) { animation-delay: 300ms; }
+.animate-card-enter:nth-child(8) { animation-delay: 350ms; }
+.animate-card-enter:nth-child(9) { animation-delay: 400ms; }
+.animate-card-enter:nth-child(10) { animation-delay: 450ms; }
+.animate-card-enter:nth-child(n+11) { animation-delay: 500ms; }
+
+/* 9. Confetti-like dot floating di background */
+@keyframes dot-drift {
+  0% { transform: translateY(0) scale(1); opacity: 0.4; }
+  100% { transform: translateY(-40px) scale(0.5); opacity: 0; }
+}
+.animate-dot {
+  animation: dot-drift 4s ease-out infinite;
+}
+
+/* 10. Badge count — bounce saat angka berubah */
+@keyframes badge-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.animate-badge {
+  animation: badge-pop 0.3s ease-out;
+}
+
+/* 11. Shimmer (loading skeleton) */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* 12. Pengecilan smooth saat card di-hover (selain scale gambar) */
+.card-lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease-out;
+}
+.card-lift:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px -8px rgba(53, 95, 170, 0.15);
+}
+
+/* 13. Stagger untuk grid items — via inline style biar lebih controlled */
+/* fallback: gunakan nth-child sudah di atas */
