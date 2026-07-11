@@ -4,6 +4,7 @@ definePageMeta({ layout: false })
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+const leaving = ref(false)
 
 async function handleLogin() {
   loading.value = true
@@ -15,6 +16,9 @@ async function handleLogin() {
     })
     if (res.success) {
       localStorage.setItem('admin_auth', 'true')
+      // Zoom-out animasi sebelum navigasi
+      leaving.value = true
+      await new Promise(r => setTimeout(r, 400))
       await navigateTo('/dashboard')
     } else {
       error.value = res.message || 'Password salah!'
@@ -28,7 +32,10 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col md:flex-row bg-white overflow-hidden">
+  <div
+    class="min-h-screen flex flex-col md:flex-row bg-white overflow-hidden transition-all duration-500 ease-out"
+    :class="leaving ? 'opacity-0 scale-110' : 'opacity-100 scale-100'"
+  >
 
     <!-- ═══ LEFT PANEL — Pinpin hero ═══ -->
     <div class="relative flex-1 flex flex-col items-center justify-center p-8 md:p-12 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 overflow-hidden min-h-[40vh] md:min-h-0">
@@ -94,7 +101,7 @@ async function handleLogin() {
 
             <button
               type="submit"
-              :disabled="loading"
+              :disabled="loading || leaving"
               class="relative w-full bg-[#355faa] text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wider overflow-hidden transition-all shadow-lg shadow-blue-900/20 hover:shadow-xl hover:bg-[#2d5191] active:scale-[0.98] disabled:opacity-60"
             >
               <span v-if="loading" class="flex items-center justify-center gap-2">
