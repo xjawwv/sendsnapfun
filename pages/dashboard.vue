@@ -162,6 +162,39 @@ async function handleEditUpload(e) {
   finally { e.target.value = '' }
 }
 
+const showBulkModal = ref(false)
+const bulkDriveLink = ref('')
+const bulkPaket = ref('Self Photo')
+const bulkGroupName = ref('')
+const bulkHours = ref('168')
+const bulkLoading = ref(false)
+const bulkResult = ref('')
+
+async function handleBulkAdd() {
+  if (!bulkDriveLink.value) return
+  bulkLoading.value = true
+  bulkResult.value = ''
+  try {
+    const res = await $fetch('/api/albums/batch', {
+      method: 'POST',
+      body: {
+        drive_link: bulkDriveLink.value,
+        paket: bulkPaket.value,
+        group_name: bulkGroupName.value,
+        hours: bulkHours.value,
+      },
+    })
+    if (res.success) {
+      bulkResult.value = '✅ ' + res.count + ' proyek berhasil dibuat!'
+      setTimeout(() => { showBulkModal.value = false; bulkResult.value = ''; loadData() }, 2000)
+    } else {
+      bulkResult.value = '❌ ' + (res.message || 'Gagal.')
+    }
+  } catch (err) {
+    bulkResult.value = '❌ Gagal: ' + (err.message || 'Kesalahan jaringan')
+  } finally { bulkLoading.value = false }
+}
+
 async function handleLogout() {
   localStorage.removeItem('admin_auth')
   await $fetch('/api/auth/logout', { method: 'POST' }); await navigateTo('/login')
@@ -299,6 +332,10 @@ onMounted(async () => {
                 <button @click="showUploadModal = true" class="flex-1 bg-[#059669] text-white py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch hover:bg-emerald-700">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Upload
+                </button>
+                <button @click="showBulkModal = true" class="flex-1 bg-[#355faa] text-white py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 btn-touch hover:bg-blue-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                  Bulk
                 </button>
               </div>
             </div>
@@ -497,6 +534,54 @@ onMounted(async () => {
       </div>
 
     </div>
+
+      <!-- Bulk Add Modal -->
+      <div v-if="showBulkModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4" @click.self="!bulkLoading ? showBulkModal = false : null">
+        <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-xl">Tarik Otomatis dari Folder Parent</h3>
+            <button @click="showBulkModal = false" :disabled="bulkLoading" class="text-gray-400 hover:bg-gray-100 p-2 rounded-full disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form @submit.prevent="handleBulkAdd" class="space-y-4">
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+              <p class="font-bold mb-1">Cara kerja:</p>
+              <p class="text-xs">Masukkan link folder utama Google Drive. Sistem akan mendeteksi semua sub-folder di dalamnya dan membuat 1 link galeri per sub-folder secara otomatis.</p>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Link Google Drive (Folder Utama)</label>
+              <input v-model="bulkDriveLink" type="url" required class="w-full bg-gray-50 p-3 rounded-xl border outline-none" placeholder="https://drive.google.com/drive/folders/...">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Paket</label>
+                <select v-model="bulkPaket" class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
+                  <option value="Self Photo">Self Photo</option>
+                  <option value="Photobox">Photobox</option>
+                  <option value="Pas Photo">Pas Photo</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Durasi</label>
+                <select v-model="bulkHours" class="w-full bg-gray-50 p-3 rounded-xl border outline-none">
+                  <option value="168">1 Minggu</option>
+                  <option value="336">2 Minggu</option>
+                  <option value="720">1 Bulan</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Nama Folder Dashboard (Opsional)</label>
+              <input v-model="bulkGroupName" type="text" class="w-full bg-gray-50 p-3 rounded-xl border outline-none" placeholder="Kosongkan = pakai nama folder Google Drive">
+            </div>
+            <p v-if="bulkResult" class="text-sm font-bold text-center" :class="bulkResult.includes('✅') ? 'text-emerald-600' : 'text-red-500'">{{ bulkResult }}</p>
+            <button type="submit" :disabled="bulkLoading || !bulkDriveLink" class="w-full bg-[#355faa] text-white py-3 rounded-xl font-bold text-sm btn-touch disabled:opacity-50">
+              {{ bulkLoading ? 'Memproses...' : 'Tarik Semua Sub-Folder' }}
+            </button>
+          </form>
+        </div>
+      </div>
 
       <UploadModal v-if="showUploadModal" @close="showUploadModal = false" />
       <UploadProgress />
