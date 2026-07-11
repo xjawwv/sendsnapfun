@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
   const id = getRouterParam(event, 'id')
-  const config = useRuntimeConfig()
   const db = await getDb()
 
   if (!id || !db[id]) {
@@ -14,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const files = await fetchDriveImages(album.folder_id, config.gdriveApiKey)
+    const files = await fetchDriveImagesAuth(album.folder_id)
     return {
       success: true,
       photos: files.map((f, i) => ({
