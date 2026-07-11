@@ -59,11 +59,6 @@ async function handleLogin() {
     <!-- ═══ RIGHT PANEL — Login Card ═══ -->
     <div class="relative flex-1 flex items-center justify-center p-6 md:p-12 bg-gray-50/50 overflow-hidden">
 
-      <!-- Pinpin — kecil di kanan atas -->
-      <div class="absolute top-6 right-6 md:top-10 md:right-12 w-16 md:w-28 animate-float pointer-events-none z-10" style="animation-delay:0.5s">
-        <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto drop-shadow-xl">
-      </div>
-
       <!-- Decorative dot -->
       <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-[#fbdc00]/10 rounded-full blur-2xl"></div>
 
