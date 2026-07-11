@@ -271,7 +271,7 @@ onUnmounted(() => {
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p class="text-sm text-center px-4">{{ errorMsg }}</p>
       </div>
-      <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div v-else v-auto-animate class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <div v-for="(photo, i) in photos" :key="photo.id" class="relative aspect-[4/5] bg-white rounded-xl overflow-hidden group shadow-sm border border-gray-100 animate-card-enter card-lift">
           <img :src="photo.displayUrl" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" crossorigin="anonymous" decoding="async">
 

@@ -364,7 +364,7 @@ onMounted(async () => {
                   </div>
                 </div>
                 <div class="hidden border-t border-gray-100 p-5 bg-gray-50/50">
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div v-auto-animate class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div v-for="album in albums" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors animate-card-enter card-lift">
                       <div class="flex justify-between items-start">
                         <div>
@@ -406,7 +406,7 @@ onMounted(async () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" class="mx-auto mb-3"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               <p class="text-gray-400 text-sm font-bold">Tidak ada link aktif di luar folder.</p>
             </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-else v-auto-animate class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div v-for="album in data.looseProjects" :key="album.id" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-3 hover:border-blue-200 transition-colors animate-card-enter card-lift">
                 <div class="flex justify-between items-start">
                   <div>
@@ -506,7 +506,7 @@ onMounted(async () => {
               <div v-else-if="filteredEditPhotos.length === 0" class="text-center py-10 text-gray-400">
                 <p class="text-xs">Tidak ada hasil ditemukan.</p>
               </div>
-              <div v-else class="max-h-[400px] overflow-y-auto rounded-xl border border-gray-100">
+              <div v-else v-auto-animate class="max-h-[400px] overflow-y-auto rounded-xl border border-gray-100">
                 <table class="w-full text-xs">
                   <thead class="sticky top-0 bg-gray-50">
                     <tr>
