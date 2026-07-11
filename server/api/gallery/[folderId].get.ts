@@ -20,12 +20,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Folder ID required' })
   }
 
+  // Gallery visitor — coba OAuth dulu, fallback API key (folder public)
   let files: { id: string; name: string }[] = []
   try {
     files = await fetchDriveImagesAuth(folderId)
-  } catch (e: any) {
-    console.error('Gallery fetch error:', e.message)
-    // Return empty array instead of throwing — photos will just be empty
+  } catch {
+    try {
+      const config = useRuntimeConfig()
+      const { fetchDriveImages } = await import('../../utils/drive')
+      files = await fetchDriveImages(folderId, config.gdriveApiKey)
+    } catch (e: any) {
+      console.error('Gallery fetch error:', e.message)
+    }
   }
 
   return {
