@@ -1,8 +1,5 @@
-import type { DriveFile } from '../../utils/drive'
-
 export default defineEventHandler(async (event) => {
   const folderId = getRouterParam(event, 'folderId')
-  const config = useRuntimeConfig()
   const query = getQuery(event)
 
   const albumId = query.album as string
@@ -23,12 +20,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Folder ID required' })
   }
 
-  let files: DriveFile[] = []
+  // Prioritaskan OAuth (lebih stabil), fallback ke API key
+  let files: { id: string; name: string }[] = []
   try {
-    files = await fetchDriveImages(folderId, config.gdriveApiKey)
-  } catch (error: any) {
-    console.error('Gallery fetch error:', error.message)
+    files = await fetchDriveImagesAuth(folderId)
+  } catch {
+    console.warn('OAuth gallery fetch failed, falling back to API key')
+    try {
+      const config = useRuntimeConfig()
+      const { fetchDriveImages } = await import('../../utils/drive')
+      files = await fetchDriveImages(folderId, config.gdriveApiKey)
+    } catch (e: any) {
+      console.error('Gallery fetch error:', e.message)
+    }
   }
+
   return {
     success: true,
     files: files.map((f) => ({
