@@ -50,9 +50,13 @@ export async function getTokensFromCode(oauth2Client: any, code: string) {
 }
 
 export async function saveTokens(tokens: any) {
+  // Preserve existing refresh_token if Google didn't return a new one (re-auth case)
+  const existing = await getStoredTokens()
+  const refreshToken = tokens.refresh_token || existing?.refresh_token || null
+
   const tokenData = {
     access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
+    refresh_token: refreshToken,
     expiry_date: tokens.expiry_date,
     scope: tokens.scope,
     token_type: tokens.token_type,

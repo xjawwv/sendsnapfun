@@ -46,14 +46,21 @@ export async function getDb(): Promise<Database> {
 export async function saveDb(db: Database): Promise<void> {
   await ensureTable()
   const entries = Object.entries(db).filter(([id]) => !id.startsWith('_'))
-  await dbRun(`DELETE FROM ${ALBUMS_TABLE}`)
-  if (entries.length > 0) {
-    const placeholders = entries.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(',')
-    const values = entries.flatMap(([id, album]) => [
-      album.id, album.name, album.paket, album.drive_link,
-      album.folder_id, album.group_name, album.expires_at, album.created_at
-    ])
-    await dbRun(`INSERT INTO ${ALBUMS_TABLE} (id, name, paket, drive_link, folder_id, group_name, expires_at, created_at) VALUES ${placeholders}`, values)
+  for (const [, album] of entries) {
+    await dbRun(
+      `INSERT INTO ${ALBUMS_TABLE} (id, name, paket, drive_link, folder_id, group_name, expires_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         name = VALUES(name),
+         paket = VALUES(paket),
+         drive_link = VALUES(drive_link),
+         folder_id = VALUES(folder_id),
+         group_name = VALUES(group_name),
+         expires_at = VALUES(expires_at),
+         created_at = VALUES(created_at)`,
+      [album.id, album.name, album.paket, album.drive_link,
+       album.folder_id, album.group_name, album.expires_at, album.created_at]
+    )
   }
 }
 
