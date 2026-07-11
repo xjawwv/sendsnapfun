@@ -140,12 +140,27 @@ function generateGIF() {
   if (selectedGifUrls.value.size < 2) return alert('Pilih minimal 2 foto!')
   showGifModal.value = true; gifProcessing.value = true; gifResult.value = ''
   const images = Array.from(selectedGifUrls.value)
-  gifshot.createGIF({
-    images, gifWidth: 600, gifHeight: 600, interval: 0.5, crossOrigin: 'Anonymous',
-  }, function(obj) {
-    if (!obj.error) { gifResult.value = obj.image; gifProcessing.value = false }
-    else { alert('Gagal membuat GIF.'); showGifModal.value = false }
-  })
+
+  // Hitung aspect ratio dari foto pertama (sama seperti link.snapfunstudio.id.php)
+  const tempImg = new Image()
+  tempImg.crossOrigin = 'Anonymous'
+  tempImg.src = images[0]
+  tempImg.onload = function() {
+    const aspectRatio = tempImg.naturalWidth / tempImg.naturalHeight
+    const gifW = 600
+    const gifH = Math.round(gifW / aspectRatio)
+
+    gifshot.createGIF({
+      images,
+      gifWidth: gifW,
+      gifHeight: gifH,
+      interval: 0.5,
+      crossOrigin: 'Anonymous',
+    }, function(obj) {
+      if (!obj.error) { gifResult.value = obj.image; gifProcessing.value = false }
+      else { alert('Gagal membuat GIF.'); showGifModal.value = false }
+    })
+  }
 }
 
 function enterSelectMode() {
@@ -317,8 +332,8 @@ onUnmounted(() => {
 
     <!-- Download Modal -->
     <div v-if="showDownloadModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-      <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm text-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#355faa] mx-auto mb-6"></div>
+      <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm text-center animate-pop">
+        <img src="/Panpan-03.png" alt="Panpan" class="w-32 h-32 mx-auto mb-4 object-contain animate-float">
         <h3 class="font-bold text-xl text-gray-900 mb-2">Tunggu Sebentar...</h3>
         <p class="text-sm text-gray-500 font-medium">{{ downloadProgress }}</p>
       </div>
