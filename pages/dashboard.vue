@@ -43,12 +43,6 @@ async function handleDeleteGroup(groupName) {
   finally { isDeleting.value = false }
 }
 
-async function handleDeleteAllExpired() {
-  if (!await dialog.confirm('Yakin ingin menghapus SEMUA riwayat link yang telah kedaluwarsa?')) return
-  isDeleting.value = true
-  try { await $fetch('/api/albums/delete-expired', { method: 'POST' }); await loadData() }
-  finally { isDeleting.value = false }
-}
 
 async function handleDeleteBulk() {
   if (selectedIds.value.size === 0) return
@@ -284,14 +278,10 @@ onMounted(async () => {
 
       <main class="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative">
         <div v-if="data" class="flex flex-col gap-8 pb-8">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-4">
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Total Proyek</p>
               <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ data.activeLinks }}</p>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-              <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Perlu Dihapus</p>
-              <p class="text-2xl md:text-3xl font-bold text-red-500">{{ data.expiredCount }}</p>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
               <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-2">Upload Speed</p>
@@ -314,43 +304,6 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div v-if="data.expiredProjects.length > 0" class="p-6 bg-red-50 border border-red-200 rounded-[2rem]">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  <h3 class="font-bold text-red-800 text-lg uppercase tracking-wider">Perhatian: Hapus Dari Drive</h3>
-                </div>
-                <p class="text-sm text-red-600 font-medium leading-relaxed max-w-3xl">Link klien di bawah ini masa berlakunya sudah habis. Hapus folder fisiknya di Google Drive Anda agar tidak memenuhi kapasitas, lalu hapus riwayatnya dari sini.</p>
-              </div>
-              <button @click="handleDeleteAllExpired" class="shrink-0 bg-red-600 text-white px-4 py-3 rounded-xl text-xs font-bold hover:bg-red-700 shadow-md flex items-center justify-center gap-2 btn-touch w-full md:w-auto transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                Hapus Semua Riwayat
-              </button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="album in data.expiredProjects" :key="album.id" class="bg-white p-5 rounded-2xl border border-red-200 shadow-sm flex flex-col gap-3 relative overflow-hidden group hover:border-red-300 transition-colors">
-                <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="text-[10px] font-black text-red-500 uppercase mb-1">Kedaluwarsa</p>
-                    <h4 class="font-bold text-gray-900 truncate max-w-[150px]">{{ album.name }}</h4>
-                    <p class="text-xs text-gray-400 font-mono mt-1">ID Folder: {{ album.folder_id }}</p>
-                  </div>
-                  <input type="checkbox" :checked="selectedIds.has(album.id)" @change="toggleSelect(album.id)" class="w-5 h-5 text-red-500 bg-gray-100 border-gray-200 rounded cursor-pointer transition-all">
-                </div>
-                <div class="flex gap-2 pt-2 mt-auto">
-                  <a :href="album.drive_link" target="_blank" class="flex-[2] bg-gray-100 text-gray-700 py-2.5 rounded-xl text-xs font-bold btn-touch flex justify-center items-center gap-2 hover:bg-gray-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    Cek Drive
-                  </a>
-                  <button @click="handleDelete(album.id)" class="px-4 bg-red-100 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-colors btn-touch flex justify-center items-center gap-2 font-bold text-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div v-if="Object.keys(data.groupedProjects).length > 0">
             <h3 class="font-bold text-gray-800 text-sm uppercase tracking-wider ml-1 mb-4">Folder Proyek Aktif</h3>
