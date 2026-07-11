@@ -1,4 +1,6 @@
 ﻿<script setup lang="ts">
+definePageMeta({ title: 'Galeri — SnapLink' })
+
 const route = useRoute()
 const id = (route.params.id as string).toUpperCase()
 

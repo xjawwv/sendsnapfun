@@ -1,4 +1,5 @@
 <script setup lang="ts">
+definePageMeta({ title: 'SnapLink' })
 onMounted(async () => {
   if (import.meta.client) {
     const localAuth = localStorage.getItem('admin_auth')

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: false })
+definePageMeta({ layout: false, title: 'Login — SnapLink' })
 
 const password = ref('')
 const error = ref('')

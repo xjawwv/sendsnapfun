@@ -37,6 +37,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      title: 'SnapLink — Portal Admin',
       link: [
         { rel: 'icon', href: '/favicon.ico' },
       ],

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+definePageMeta({ title: 'Link Kedaluwarsa — SnapLink' })
+</script>
+
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-[#f9fafb]">
     <div class="w-24 h-24 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6">
