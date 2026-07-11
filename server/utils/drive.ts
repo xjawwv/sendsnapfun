@@ -53,9 +53,5 @@ export async function fetchDriveImages(folderId: string, apiKey: string): Promis
     pageToken = data.nextPageToken
   } while (pageToken)
 
-  if (allFiles.length === 0) {
-    throw new Error("Folder kosong atau tidak disetting 'Siapa saja yang memiliki link'.")
-  }
-
   return allFiles
 }

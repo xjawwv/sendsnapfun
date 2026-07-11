@@ -1,3 +1,5 @@
+import type { DriveFile } from '../../utils/drive'
+
 export default defineEventHandler(async (event) => {
   const folderId = getRouterParam(event, 'folderId')
   const config = useRuntimeConfig()
@@ -21,18 +23,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Folder ID required' })
   }
 
+  let files: DriveFile[] = []
   try {
-    const files = await fetchDriveImages(folderId, config.gdriveApiKey)
-    return {
-      success: true,
-      files: files.map((f) => ({
-        id: f.id,
-        name: f.name,
-        displayUrl: `/api/proxy/image/${f.id}`,
-        downloadUrl: `/api/proxy/image/${f.id}`,
-      })),
-    }
+    files = await fetchDriveImages(folderId, config.gdriveApiKey)
   } catch (error: any) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
+    console.error('Gallery fetch error:', error.message)
+  }
+  return {
+    success: true,
+    files: files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      displayUrl: `https://lh3.googleusercontent.com/d/${f.id}=s800`,
+      downloadUrl: `https://lh3.googleusercontent.com/d/${f.id}=s1600`,
+    })),
   }
 })
