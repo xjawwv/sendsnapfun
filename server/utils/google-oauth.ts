@@ -50,14 +50,14 @@ export async function getTokensFromCode(oauth2Client: any, code: string) {
 }
 
 export async function saveTokens(tokens: any) {
-  // Preserve existing refresh_token if Google didn't return a new one (re-auth case)
   const existing = await getStoredTokens()
+  // Preserve refresh_token jika Google tidak kirim (terjadi saat re-auth)
   const refreshToken = tokens.refresh_token || existing?.refresh_token || null
 
   const tokenData = {
     access_token: tokens.access_token,
     refresh_token: refreshToken,
-    expiry_date: tokens.expiry_date,
+    expiry_date: tokens.expiry_date || Date.now() + 3600 * 1000,
     scope: tokens.scope,
     token_type: tokens.token_type,
   }
@@ -90,9 +90,11 @@ export async function refreshAccessToken(tokens: any) {
   }
 
   const newTokens = await response.json()
+  // Token rotation: simpan refresh_token baru jika Google mengirimkannya
   const updated = {
     ...tokens,
     access_token: newTokens.access_token,
+    refresh_token: newTokens.refresh_token || tokens.refresh_token,
     expiry_date: Date.now() + (newTokens.expires_in || 3600) * 1000,
   }
   await saveTokens(updated)
