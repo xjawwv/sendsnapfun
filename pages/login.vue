@@ -37,11 +37,11 @@ async function handleLogin() {
       <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
       <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-yellow-300/10 rounded-full blur-3xl"></div>
 
-      <!-- Pinpin — hero -->
+      <!-- Pinpin — hero; berganti saat error -->
       <div class="relative z-10 flex flex-col items-center md:items-start gap-4 md:gap-6 max-w-md">
 
         <div class="w-48 md:w-72 lg:w-80 drop-shadow-2xl animate-float" style="animation-delay:0.2s">
-          <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto">
+          <img :src="error ? '/Pinpin-03.png' : '/Pinpin-02.png'" alt="Pinpin" class="w-full h-auto transition-all duration-500">
         </div>
 
         <div class="text-center md:text-left">
