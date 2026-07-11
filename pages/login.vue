@@ -30,23 +30,18 @@ async function handleLogin() {
 <template>
   <div class="min-h-screen flex flex-col md:flex-row bg-white overflow-hidden">
 
-    <!-- ═══ LEFT PANEL — Panpan + welcome ═══ -->
+    <!-- ═══ LEFT PANEL — Pinpin hero ═══ -->
     <div class="relative flex-1 flex flex-col items-center justify-center p-8 md:p-12 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 overflow-hidden min-h-[40vh] md:min-h-0">
 
       <!-- Decorative blobs -->
       <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
       <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-yellow-300/10 rounded-full blur-3xl"></div>
 
-      <!-- Pinpin — floating di area kiri (sampai masuk ke panel kiri) -->
-      <div class="absolute -bottom-4 left-4 w-20 md:w-28 animate-float pointer-events-none z-10 opacity-80" style="animation-delay:0.8s">
-        <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto">
-      </div>
-
-      <!-- Panpan — hero -->
+      <!-- Pinpin — hero -->
       <div class="relative z-10 flex flex-col items-center md:items-start gap-4 md:gap-6 max-w-md">
 
         <div class="w-48 md:w-72 lg:w-80 drop-shadow-2xl animate-float" style="animation-delay:0.2s">
-          <img src="/Panpan-02.png" alt="Panpan" class="w-full h-auto">
+          <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto">
         </div>
 
         <div class="text-center md:text-left">
@@ -64,8 +59,8 @@ async function handleLogin() {
     <!-- ═══ RIGHT PANEL — Login Card ═══ -->
     <div class="relative flex-1 flex items-center justify-center p-6 md:p-12 bg-gray-50/50 overflow-hidden">
 
-      <!-- Pinpin — di kanan atas -->
-      <div class="absolute top-6 right-6 md:top-10 md:right-12 w-24 md:w-36 animate-float pointer-events-none z-10" style="animation-delay:0.5s">
+      <!-- Pinpin — kecil di kanan atas -->
+      <div class="absolute top-6 right-6 md:top-10 md:right-12 w-16 md:w-28 animate-float pointer-events-none z-10" style="animation-delay:0.5s">
         <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto drop-shadow-xl">
       </div>
 
