@@ -105,18 +105,21 @@ export async function clearTokens() {
   await saveSetting(TOKENS_KEY, null)
 }
 
-export async function getAuthenticatedDrive(): Promise<any> {
-  const oauth2Client = getOAuth2Client()
+export async function getCurrentAccessToken(): Promise<{ accessToken: string }> {
   let tokens = await getStoredTokens()
-
   if (!tokens) {
     throw createError({ statusCode: 401, statusMessage: 'Google Drive not connected. Please connect your Google account first.' })
   }
-
   if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
     tokens = await refreshAccessToken(tokens)
   }
+  return { accessToken: tokens.access_token }
+}
 
-  oauth2Client.setCredentials(tokens)
+export async function getAuthenticatedDrive(): Promise<any> {
+  const oauth2Client = getOAuth2Client()
+  const { accessToken } = await getCurrentAccessToken()
+
+  oauth2Client.setCredentials({ access_token: accessToken })
   return google.drive({ version: 'v3', auth: oauth2Client })
 }

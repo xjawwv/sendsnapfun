@@ -56,19 +56,19 @@ export async function deleteDriveFolder(folderId: string) {
 }
 
 export async function fetchDriveImagesAuth(folderId: string): Promise<{ id: string; name: string }[]> {
-  const drive = await getAuthenticatedDrive()
+  const query = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed=false`)
   const allFiles: { id: string; name: string }[] = []
   let pageToken: string | undefined
 
   do {
-    const res = await drive.files.list({
-      q: `'${folderId}' in parents and mimeType contains 'image/' and trashed=false`,
-      fields: 'files(id,name),nextPageToken',
-      pageSize: 100,
-      pageToken,
-    })
-    if (res.data.files) allFiles.push(...res.data.files.map(f => ({ id: f.id!, name: f.name! })))
-    pageToken = res.data.nextPageToken ?? undefined
+    const { accessToken } = await getCurrentAccessToken()
+    const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100${pageToken ? '&pageToken=' + pageToken : ''}`
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
+    if (!response.ok) throw new Error(await response.text().catch(() => 'Gagal fetch drive images'))
+    const data = await response.json()
+    if (!data.files) break
+    allFiles.push(...data.files.map((f: any) => ({ id: f.id, name: f.name })))
+    pageToken = data.nextPageToken
   } while (pageToken)
 
   return allFiles
