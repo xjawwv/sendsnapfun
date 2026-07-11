@@ -8,13 +8,11 @@ const loading = ref(false)
 async function handleLogin() {
   loading.value = true
   error.value = ''
-
   try {
     const res = await $fetch('/api/auth/login', {
       method: 'POST',
       body: { password: password.value },
     })
-
     if (res.success) {
       localStorage.setItem('admin_auth', 'true')
       await navigateTo('/dashboard')
@@ -30,84 +28,104 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 bg-gradient-to-br from-blue-50 via-white to-yellow-50 overflow-hidden relative">
+  <div class="min-h-screen flex flex-col md:flex-row bg-white overflow-hidden">
 
-    <!-- Pinpin-02 — floating bebas di kanan atas (melambai) -->
-    <div class="absolute top-4 md:top-8 right-4 md:right-12 w-28 md:w-44 animate-float pointer-events-none z-10" style="animation-delay:0.5s">
-      <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto drop-shadow-xl">
-    </div>
+    <!-- ═══ LEFT PANEL — Panpan + welcome ═══ -->
+    <div class="relative flex-1 flex flex-col items-center justify-center p-8 md:p-12 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 overflow-hidden min-h-[40vh] md:min-h-0">
 
-    <!-- Pinpin-02 kecil — di kiri bawah (sembunyi sebagian) -->
-    <div class="absolute bottom-0 left-0 w-20 md:w-32 pointer-events-none z-10 opacity-70">
-      <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto">
-    </div>
+      <!-- Decorative blobs -->
+      <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-yellow-300/10 rounded-full blur-3xl"></div>
 
-    <!-- Panpan-02 — mengarah ke login card (desktop) + di card (mobile) -->
-    <div class="hidden md:block absolute left-4 lg:left-16 xl:left-28 top-1/2 -translate-y-1/2 w-40 lg:w-56 pointer-events-none z-10 animate-slide-left" style="animation-delay:0.2s">
-      <img src="/Panpan-02.png" alt="Panpan" class="w-full h-auto drop-shadow-2xl">
-    </div>
-    <div class="md:hidden absolute left-0 bottom-20 w-24 pointer-events-none z-10 opacity-80">
-      <img src="/Panpan-02.png" alt="Panpan" class="w-full h-auto">
-    </div>
-
-    <!-- Floating dots background -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <span class="absolute w-2 h-2 bg-[#355faa]/20 rounded-full animate-dot" style="left:10%;top:60%;animation-delay:0s"></span>
-      <span class="absolute w-1.5 h-1.5 bg-[#fbdc00]/30 rounded-full animate-dot" style="left:30%;top:20%;animation-delay:1s"></span>
-      <span class="absolute w-2.5 h-2.5 bg-[#355faa]/15 rounded-full animate-dot" style="left:70%;top:80%;animation-delay:2s"></span>
-      <span class="absolute w-1.5 h-1.5 bg-[#fbdc00]/20 rounded-full animate-dot" style="left:85%;top:40%;animation-delay:3s"></span>
-      <span class="absolute w-2 h-2 bg-[#355faa]/25 rounded-full animate-dot" style="left:50%;top:10%;animation-delay:4s"></span>
-    </div>
-
-    <!-- Login Card -->
-    <div class="relative z-20 w-full max-w-sm bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/50 text-center animate-pop">
-
-      <!-- Avatar -->
-      <div class="w-16 h-16 bg-[#355faa] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/20 animate-float">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <!-- Pinpin — floating di area kiri (sampai masuk ke panel kiri) -->
+      <div class="absolute -bottom-4 left-4 w-20 md:w-28 animate-float pointer-events-none z-10 opacity-80" style="animation-delay:0.8s">
+        <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto">
       </div>
 
-      <h1 class="text-2xl font-bold mb-1 text-gray-900">Portal Admin</h1>
-      <p class="text-sm text-gray-500 mb-8">Masukkan sandi untuk mengelola galeri.</p>
+      <!-- Panpan — hero -->
+      <div class="relative z-10 flex flex-col items-center md:items-start gap-4 md:gap-6 max-w-md">
 
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div class="relative">
-          <input
-            v-model="password"
-            type="password"
-            class="w-full bg-gray-50/80 border border-gray-200 p-4 rounded-xl text-center text-lg outline-none focus:ring-2 focus:ring-[#355faa] focus:bg-white transition-all"
-            placeholder="••••••"
-            required
-          >
+        <div class="w-48 md:w-72 lg:w-80 drop-shadow-2xl animate-float" style="animation-delay:0.2s">
+          <img src="/Panpan-02.png" alt="Panpan" class="w-full h-auto">
         </div>
 
-        <transition name="fade">
-          <p v-if="error" class="text-red-500 text-xs font-bold bg-red-50 py-2 rounded-lg">{{ error }}</p>
-        </transition>
+        <div class="text-center md:text-left">
+          <h1 class="text-2xl md:text-4xl font-black text-white leading-tight drop-shadow-lg">
+            Snap<span class="text-[#fbdc00]">Link</span>
+          </h1>
+          <p class="text-sm md:text-base text-blue-100 font-medium mt-2 max-w-xs">
+            Kelola & bagikan galeri foto klien dengan mudah.
+          </p>
+        </div>
 
-        <button
-          type="submit"
-          :disabled="loading"
-          class="w-full bg-[#355faa] text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wider btn-touch disabled:opacity-50 hover:bg-[#2d5191] transition-all shadow-lg shadow-blue-900/20 active:scale-95"
-        >
-          <span v-if="loading" class="flex items-center justify-center gap-2">
-            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            Memproses...
-          </span>
-          <span v-else>Masuk Dashboard</span>
-        </button>
-      </form>
-
+      </div>
     </div>
 
-    <!-- Footer branding -->
-    <p class="absolute bottom-4 text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em] z-10">Snap Fun Studio</p>
+    <!-- ═══ RIGHT PANEL — Login Card ═══ -->
+    <div class="relative flex-1 flex items-center justify-center p-6 md:p-12 bg-gray-50/50 overflow-hidden">
+
+      <!-- Pinpin — di kanan atas -->
+      <div class="absolute top-6 right-6 md:top-10 md:right-12 w-24 md:w-36 animate-float pointer-events-none z-10" style="animation-delay:0.5s">
+        <img src="/Pinpin-02.png" alt="Pinpin" class="w-full h-auto drop-shadow-xl">
+      </div>
+
+      <!-- Decorative dot -->
+      <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-[#fbdc00]/10 rounded-full blur-2xl"></div>
+
+      <div class="relative z-20 w-full max-w-sm animate-pop">
+
+        <!-- Logo mini -->
+        <div class="flex items-center justify-center gap-3 mb-8">
+          <div class="w-10 h-10 bg-[#355faa] rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <span class="font-bold text-xl text-gray-800">Portal Admin</span>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100">
+          <p class="text-sm text-gray-500 mb-6 text-center">Masukkan sandi untuk melanjutkan.</p>
+
+          <form @submit.prevent="handleLogin" class="space-y-5">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+              <input
+                v-model="password"
+                type="password"
+                class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-center text-lg outline-none focus:ring-2 focus:ring-[#355faa] focus:bg-white transition-all"
+                placeholder="••••••"
+                required
+              >
+            </div>
+
+            <transition name="fade">
+              <p v-if="error" class="text-red-500 text-xs font-bold bg-red-50 py-3 rounded-xl text-center">{{ error }}</p>
+            </transition>
+
+            <button
+              type="submit"
+              :disabled="loading"
+              class="relative w-full bg-[#355faa] text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wider overflow-hidden transition-all shadow-lg shadow-blue-900/20 hover:shadow-xl hover:bg-[#2d5191] active:scale-[0.98] disabled:opacity-60"
+            >
+              <span v-if="loading" class="flex items-center justify-center gap-2">
+                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Memproses...
+              </span>
+              <span v-else>Masuk Dashboard</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em] mt-8">Snap Fun Studio</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
